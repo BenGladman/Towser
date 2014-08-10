@@ -10,6 +10,8 @@ namespace Signet
     {
         enum Verbs : byte
         {
+            SE = 240,
+            SB = 250,
             WILL = 251,
             WONT = 252,
             DO = 253,
@@ -35,13 +37,15 @@ namespace Signet
         private readonly NetworkStream _stream;
         private readonly Encoding _encoding;
         private readonly Decoder _decoder;
+        private readonly string _termtype;
 
-        public TelnetClient(string hostname, int port, string encodingName)
+        public TelnetClient(string hostname, int port, string encodingName, string termtype)
         {
             _client = new TcpClient(hostname, port);
             _stream = _client.GetStream();
             _encoding = Encoding.GetEncoding(encodingName);
             _decoder = _encoding.GetDecoder();
+            _termtype = termtype;
         }
 
         public void Write(string data)
@@ -104,46 +108,56 @@ namespace Signet
         {
             var bytes = new byte[count];
             var bytelen = 0;
+            bool subnegotiation = false;
+            var ix = 0;
 
-            for (var ix = 0; ix < count; ix++)
+            while (ix < count)
             {
-                byte input = buffer[ix];
+                var input = GetNextByte(buffer, count, ref ix);
 
                 if (input == (byte)Verbs.IAC)
                 {
-                    ix += 1;
-                    if (ix >= count) { break; }
-                    var inputverb = buffer[ix];
+                    var inputverb = GetNextByte(buffer, count, ref ix);
 
-                    switch (inputverb)
+                    switch ((Verbs)inputverb)
                     {
-                        case (byte)Verbs.IAC:
+                        case Verbs.IAC:
                             //literal IAC = 255 escaped, so append char 255 to output
                             bytes[bytelen] = inputverb;
                             bytelen += 1;
                             break;
 
-                        case (byte)Verbs.DO:
-                        case (byte)Verbs.DONT:
-                        case (byte)Verbs.WILL:
-                        case (byte)Verbs.WONT:
-                            // reply to all commands with "WONT", unless it is SGA (suppress go ahead) or ECHO
-                            ix += 1;
-                            if (ix >= count) { break; }
-                            var inputoption = buffer[ix];
+                        case Verbs.SB:
+                            subnegotiation = true;
+                            var suboption = GetNextByte(buffer, count, ref ix);
+                            Debug.WriteLine("Negotiate sub request {0} {1}", ((Verbs)inputverb).ToString(), ((Options)suboption).ToString());
+                            break;
+
+                        case Verbs.SE:
+                            subnegotiation = false;
+                            break;
+
+                        case Verbs.DO:
+                        case Verbs.DONT:
+                        case Verbs.WILL:
+                        case Verbs.WONT:
+                            var inputoption = GetNextByte(buffer, count, ref ix);
 
                             Debug.WriteLine("Negotiate request {0} {1}", ((Verbs)inputverb).ToString(), ((Options)inputoption).ToString());
 
                             byte responseverb;
 
                             var doOrDont = (inputverb == (byte)Verbs.DO || inputverb == (byte)Verbs.DONT);
-                            switch (inputoption)
+                            switch ((Options)inputoption)
                             {
-                                case (byte)Options.Echo:
+                                case Options.Echo:
                                     responseverb = (doOrDont ? (byte)Verbs.WONT : (byte)Verbs.DO);
                                     break;
-                                case (byte)Options.SuppressGoAhead:
+                                case Options.SuppressGoAhead:
                                     responseverb = (doOrDont ? (byte)Verbs.WILL : (byte)Verbs.DO);
+                                    break;
+                                case Options.TerminalType:
+                                    responseverb = (doOrDont ? (byte)Verbs.WILL : (byte)Verbs.DONT);
                                     break;
                                 default:
                                     responseverb = (doOrDont ? (byte)Verbs.WONT : (byte)Verbs.DONT);
@@ -155,11 +169,22 @@ namespace Signet
                             _stream.WriteByte(responseverb);
                             _stream.WriteByte((byte)inputoption);
 
+                            if (inputoption == (byte)Options.TerminalType && responseverb == (byte)Verbs.WILL)
+                            {
+                                SendTermtype();
+                            }
+
                             break;
 
                         default:
+                            Debug.WriteLine("Negotiate ignore {0}", ((Verbs)inputverb).ToString(), null);
                             break;
                     }
+                }
+                else if (subnegotiation)
+                {
+                    // ignore content of subnegotiation
+                    Debug.WriteLine("Negotiate sub ignore {0}", input);
                 }
                 else
                 {
@@ -181,5 +206,28 @@ namespace Signet
 
             return null;
         }
+
+        private byte GetNextByte(byte[] buffer, int count, ref int ix)
+        {
+            byte r = (ix < count) ? buffer[ix] : (byte)0;
+            ix += 1;
+            return r;
+        }
+
+        private void SendTermtype()
+        {
+            Debug.WriteLine("Negotiate send termtype {0}", _termtype, null);
+            _stream.WriteByte((byte)Verbs.IAC);
+            _stream.WriteByte((byte)Verbs.SB);
+            _stream.WriteByte((byte)Options.TerminalType);
+            _stream.WriteByte((byte)0);
+            foreach (char ch in _termtype)
+            {
+                _stream.WriteByte((byte)ch);
+            }
+            _stream.WriteByte((byte)Verbs.IAC);
+            _stream.WriteByte((byte)Verbs.SE);
+        }
+
     }
 }
