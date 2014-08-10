@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Net.Sockets;
 using System.Text;
@@ -7,7 +8,7 @@ namespace Signet
 {
     class TelnetClient
     {
-        enum Verbs
+        enum Verbs : byte
         {
             WILL = 251,
             WONT = 252,
@@ -16,7 +17,7 @@ namespace Signet
             IAC = 255
         }
 
-        enum Options
+        enum Options : byte
         {
             Echo = 1,
             SuppressGoAhead = 3,
@@ -30,22 +31,26 @@ namespace Signet
             EnvironmentVariables = 36
         }
 
-        TcpClient _client;
-        NetworkStream _stream;
+        private readonly TcpClient _client;
+        private readonly NetworkStream _stream;
+        private readonly Encoding _encoding;
+        private readonly Decoder _decoder;
 
-        public TelnetClient(string hostname, int port)
+        public TelnetClient(string hostname, int port, string encodingName)
         {
             _client = new TcpClient(hostname, port);
             _stream = _client.GetStream();
+            _encoding = Encoding.GetEncoding(encodingName);
+            _decoder = _encoding.GetDecoder();
         }
 
         public void Write(string data)
         {
             if (!IsConnected) return;
 
-            foreach (char ch in data)
+            var bytes = _encoding.GetBytes(data);
+            foreach (byte b in bytes)
             {
-                byte b = (byte)ch;
                 _stream.WriteByte(b);
                 // escape literal IAC
                 if (b == (byte)Verbs.IAC) { _stream.WriteByte(b); }
@@ -97,7 +102,8 @@ namespace Signet
         /// <returns></returns>
         private string ParseTelnet(byte[] buffer, int count)
         {
-            var sb = new StringBuilder();
+            var bytes = new byte[count];
+            var bytelen = 0;
 
             for (var ix = 0; ix < count; ix++)
             {
@@ -106,16 +112,15 @@ namespace Signet
                 if (input == (byte)Verbs.IAC)
                 {
                     ix += 1;
-                    var inputverb = (ix < count) ? buffer[ix] : -1;
+                    if (ix >= count) { break; }
+                    var inputverb = buffer[ix];
 
                     switch (inputverb)
                     {
-                        case -1:
-                            break;
-
                         case (byte)Verbs.IAC:
-                            //literal IAC = 255 escaped, so append char 255 to string
-                            sb.Append((char)inputverb);
+                            //literal IAC = 255 escaped, so append char 255 to output
+                            bytes[bytelen] = inputverb;
+                            bytelen += 1;
                             break;
 
                         case (byte)Verbs.DO:
@@ -124,8 +129,8 @@ namespace Signet
                         case (byte)Verbs.WONT:
                             // reply to all commands with "WONT", unless it is SGA (suppress go ahead) or ECHO
                             ix += 1;
-                            var inputoption = (count >= 3) ? buffer[2] : -1;
-                            if (inputoption == -1) { break; }
+                            if (ix >= count) { break; }
+                            var inputoption = buffer[ix];
 
                             Debug.WriteLine("Negotiate request {0} {1}", ((Verbs)inputverb).ToString(), ((Options)inputoption).ToString());
 
@@ -158,11 +163,23 @@ namespace Signet
                 }
                 else
                 {
-                    sb.Append((char)input);
+                    // append byte to output
+                    bytes[bytelen] = input;
+                    bytelen += 1;
                 }
             }
 
-            return sb.ToString();
+            if (bytelen > 0)
+            {
+                var chars = new char[bytelen];
+                var charlen = _decoder.GetChars(bytes, 0, bytelen, chars, 0);
+                if (charlen > 0)
+                {
+                    return new String(chars, 0, charlen);
+                }
+            }
+
+            return null;
         }
     }
 }

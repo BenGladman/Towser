@@ -14,10 +14,11 @@ namespace Signet
         {
             try
             {
-                var server = WebConfigurationManager.AppSettings.Get("server");
+                var server = WebConfigurationManager.AppSettings["server"];
                 var port = Int32.Parse(WebConfigurationManager.AppSettings["port"]);
+                var encodingName = WebConfigurationManager.AppSettings["encoding"];
 
-                var client = new TelnetClient(server, port);
+                var client = new TelnetClient(server, port, encodingName);
                 _clients[connectionId] = client;
 
                 Task.Factory.StartNew(() => SendStream(connectionId));
