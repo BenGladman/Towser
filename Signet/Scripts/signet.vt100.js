@@ -13,13 +13,13 @@
     var onKeyHandler = function (event) {
         if (!vt100) { return true; }
 
-        console.info(event.type + " > keycode=" + kc + " ch=" + ch);
-
         var ch;
 
         if (event.type === "keypress") {
             // printable characters
             var charcode = event.charCode;
+            console.info("keypress " + charcode);
+
             if (charcode < 32) { return true; }
             if (charcode === 127) { return true; }
             if (charcode > 255) { return true; }
@@ -27,6 +27,7 @@
 
         } else if (event.type === "keydown") {
             var kc = event.keyCode;
+            console.info("keydown " + kc);
 
             if (kc >= 65 && kc <= 90 && event.ctrlKey && !event.shiftKey) {
                 // ctrl-key input
@@ -46,7 +47,12 @@
 
                     case 13:
                         // return
-                        ch = '\n';
+                        ch = '\r\n';
+                        break;
+
+                    case 27:
+                        // escape
+                        ch = '\x1b';
                         break;
 
                     case 38:
