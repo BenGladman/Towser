@@ -1,4 +1,4 @@
-// VT100.js -- a text terminal emulator in JavaScript with a ncurses-like
+﻿// VT100.js -- a text terminal emulator in JavaScript with a ncurses-like
 // interface and a POSIX-like interface. (The POSIX-like calls are
 // implemented on top of the ncurses-like calls, not the other way round.)
 //
@@ -131,6 +131,7 @@ VT100.A_BLINK = 4;
 VT100.A_DIM = 8;
 VT100.A_BOLD = 16;
 VT100.A_STANDOUT = 32;
+VT100.A_GRAPHICS = 64;
 VT100.A_PROTECT = VT100.A_INVIS = 0; // ?
 // cursor modes
 VT100.CURSOR_REGULAR = 0;
@@ -139,7 +140,7 @@ VT100.CURSOR_APPLICATION = 1;
 VT100.TABSIZE = 8;
 // private constants
 VT100.ATTR_FLAGS_ = VT100.A_UNDERLINE | VT100.A_REVERSE | VT100.A_BLINK |
-                    VT100.A_DIM | VT100.A_BOLD | VT100.A_STANDOUT |
+                    VT100.A_DIM | VT100.A_BOLD | VT100.A_STANDOUT | VT100.A_GRAPHICS |
                     VT100.A_PROTECT | VT100.A_INVIS;
 VT100.COLOR_SHIFT_ = 6;
 VT100.browser_ie_ = (navigator.appName.indexOf("Microsoft") != -1);
@@ -150,6 +151,67 @@ VT100.INFO = 2;
 VT100.DEBUG = 3;
 // class variables
 VT100.the_vt_ = undefined;
+
+// code page 437 graphics
+VT100.GraphicsMap = {
+    8: '◘',
+    9: '○',
+    10: '◙',
+    16: '►',
+    17: '◄',
+    22: '▬',
+    30: '▲',
+    31: '▼',
+    176: '░',
+    177: '▒',
+    178: '▓',
+    179: '│',
+    180: '┤',
+    181: '╡',
+    182: '╢',
+    183: '╖',
+    184: '╕',
+    185: '╣',
+    186: '║',
+    187: '╗',
+    188: '╝',
+    189: '╜',
+    190: '╛',
+    191: '┐',
+    192: '└',
+    193: '┴',
+    194: '┬',
+    195: '├',
+    196: '─',
+    197: '┼',
+    198: '╞',
+    199: '╟',
+    200: '╚',
+    201: '╔',
+    202: '╩',
+    203: '╦',
+    204: '╠',
+    205: '═',
+    206: '╬',
+    207: '╧',
+    208: '╨',
+    209: '╤',
+    210: '╥',
+    211: '╙',
+    212: '╘',
+    213: '╒',
+    214: '╓',
+    215: '╫',
+    216: '╪',
+    217: '┘',
+    218: '┌',
+    219: '█',
+    220: '▄',
+    221: '▌',
+    222: '▐',
+    223: '▀',
+    254: '■'
+};
 
 // class methods
 
@@ -282,44 +344,39 @@ VT100.prototype.may_scroll_ = function () {
 
 VT100.prototype.html_colours_ = function (attr) {
     var fg, bg, co0, co1;
-    fg = attr.fg;
-    bg = attr.bg;
-    switch (attr.mode & (VT100.A_REVERSE | VT100.A_DIM | VT100.A_BOLD)) {
-        case 0:
-        case VT100.A_DIM | VT100.A_BOLD:
-            co0 = '00'; co1 = 'c0';
-            break;
-        case VT100.A_BOLD:
-            co0 = '00'; co1 = 'ff';
-            break;
-        case VT100.A_DIM:
-            if (fg == VT100.COLOR_BLACK)
-                co0 = '40';
-            else
-                co0 = '00';
-            co1 = '40';
-            break;
-        case VT100.A_REVERSE:
-        case VT100.A_REVERSE | VT100.A_DIM | VT100.A_BOLD:
-            co0 = 'c0'; co1 = '40';
-            break;
-        case VT100.A_REVERSE | VT100.A_BOLD:
-            co0 = 'c0'; co1 = '00';
-            break;
-        default:
-            if (fg == VT100.COLOR_BLACK)
-                co0 = '80';
-            else
-                co0 = 'c0';
-            co1 = 'c0';
+
+    if (attr.mode & VT100.A_BOLD) {
+        co0 = '55';
+        co1 = 'ff';
+    } else if (attr.mode & VT100.A_DIM) {
+        co0 = '00';
+        co1 = '55';
+    } else {
+        co0 = '00';
+        co1 = 'bb';
     }
+
+    fg = attr.fg;
+    fg = '#' + (fg & 4 ? co1 : co0) +
+         (fg & 2 ? co1 : co0) +
+         (fg & 1 ? co1 : co0);
+
+    co0 = '00';
+    co1 = 'bb';
+    bg = attr.bg;
+    bg = '#' + (bg & 4 ? co1 : co0) +
+         (bg & 2 ? co1 : co0) +
+         (bg & 1 ? co1 : co0);
+
+    if (attr.mode & VT100.A_REVERSE) {
+        var fgh = fg;
+        fg = bg;
+        bg = fgh;
+    }
+
     return {
-        f: '#' + (fg & 4 ? co1 : co0) +
-                 (fg & 2 ? co1 : co0) +
-                 (fg & 1 ? co1 : co0),
-        b: '#' + (bg & 4 ? co1 : co0) +
-                 (bg & 2 ? co1 : co0) +
-                 (bg & 1 ? co1 : co0)
+        f: fg,
+        b: bg
     };
 }
 
@@ -572,6 +629,14 @@ VT100.prototype.refresh = function () {
                 stuff += start_tag;
             }
             ch = this.text_[r][c];
+
+            if (n_at.mode & VT100.A_GRAPHICS)
+            {
+                var chcode = ch.charCodeAt(0);
+                var graphic = VT100.GraphicsMap[chcode];
+                if (graphic !== undefined) { ch = graphic; }
+            }
+
             switch (ch) {
                 case '&':
                     stuff += '&amp;'; break;
@@ -637,6 +702,12 @@ VT100.prototype.write = function (stuff) {
             case '\x7f':
             case '\x07':  /* bell, ignore it */
                 this.debug("  write:: ignoring bell character: " + ch);
+                continue;
+            case '\x0e':
+                this.attron(VT100.A_GRAPHICS);
+                continue;
+            case '\x0f':
+                this.attroff(VT100.A_GRAPHICS);
                 continue;
             case '\a':
             case '\b':
@@ -831,7 +902,7 @@ VT100.prototype.write = function (stuff) {
                                 case 42:
                                     this.bgset(VT100.COLOR_GREEN);
                                     break;
-                                case 44:
+                                case 43:
                                     this.bgset(VT100.COLOR_YELLOW);
                                     break;
                                 case 44:
