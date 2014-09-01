@@ -411,7 +411,7 @@ VT100.prototype.clear = function () {
     for (r = 0; r < this.ht_; ++r) {
         for (c = 0; c < this.wd_; ++c) {
             this.text_[r][c] = ' ';
-            this.attr_[r][c] = this._cloneAttr(this.bkgd_);
+            this.attr_[r][c] = this._cloneAttr(this.c_attr_);
         }
     }
 }
@@ -424,7 +424,7 @@ VT100.prototype.clrtobot = function () {
     for (var r = this.row_ + 1; r < ht; ++r) {
         for (var c = 0; c < wd; ++c) {
             this.text_[r][c] = ' ';
-            this.attr_[r][c] = this.bkgd_;
+            this.attr_[r][c] = this._cloneAttr(this.c_attr_);
         }
     }
 }
@@ -436,7 +436,7 @@ VT100.prototype.clrtoeol = function () {
         return;
     for (var c = this.col_; c < this.wd_; ++c) {
         this.text_[r][c] = ' ';
-        this.attr_[r][c] = this.bkgd_;
+        this.attr_[r][c] = this._cloneAttr(this.c_attr_);
     }
 }
 
@@ -447,7 +447,7 @@ VT100.prototype.clearpos = function (row, col) {
     if (col < 0 || col >= this.wd_)
         return;
     this.text_[row][col] = ' ';
-    this.attr_[row][col] = this.bkgd_;
+    this.attr_[row][col] = this._cloneAttr(this.c_attr_);
 }
 
 VT100.prototype.curs_set = function (vis, grab, eventist) {
@@ -600,7 +600,7 @@ VT100.prototype.scroll = function () {
     this.attr_[ht - 1] = n_attr;
     for (var c = 0; c < wd; ++c) {
         n_text[c] = ' ';
-        n_attr[c] = this.bkgd_;
+        n_attr[c] = this._cloneAttr(this.c_attr_);
     }
 }
 
@@ -817,6 +817,9 @@ VT100.prototype.write = function (stuff) {
                                 case 37:
                                     this.fgset(VT100.COLOR_WHITE);
                                     break;
+                                case 39:
+                                    this.fgset(this.bkgd_.fg);
+                                    break;
                                 case 40:
                                     this.bgset(VT100.COLOR_BLACK);
                                     break;
@@ -840,6 +843,9 @@ VT100.prototype.write = function (stuff) {
                                     break;
                                 case 47:
                                     this.bgset(VT100.COLOR_WHITE);
+                                    break;
+                                case 49:
+                                    this.bgset(this.bkgd_.bg);
                                     break;
                             }
                         }
