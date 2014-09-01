@@ -36,15 +36,19 @@ namespace Signet
         private readonly TcpClient _client;
         private readonly NetworkStream _stream;
         private readonly Encoding _encoding;
-        private readonly Decoder _decoder;
+        private readonly Decoder _standardDecoder;
+        private readonly Decoder _altDecoder;
         private readonly string _termtype;
+        private Decoder _activeDecoder;
 
-        public TelnetClient(string hostname, int port, string encodingName, string termtype)
+        public TelnetClient(string hostname, int port, string encodingName, string altEncodingName, string termtype)
         {
             _client = new TcpClient(hostname, port);
             _stream = _client.GetStream();
             _encoding = Encoding.GetEncoding(encodingName);
-            _decoder = _encoding.GetDecoder();
+            _standardDecoder = _encoding.GetDecoder();
+            _altDecoder = Encoding.GetEncoding(altEncodingName).GetDecoder();
+            _activeDecoder = _standardDecoder;
             _termtype = termtype;
         }
 
@@ -111,13 +115,36 @@ namespace Signet
             bool subnegotiation = false;
             var ix = 0;
 
+            var sb = new StringBuilder();
+
+            Func<byte> getNextByte = delegate()
+            {
+                byte r = (ix < count) ? buffer[ix] : (byte)0;
+                ix += 1;
+                return r;
+            };
+
+            Action appendBytesToSb = delegate()
+            {
+                if (bytelen > 0)
+                {
+                    var chars = new char[bytelen];
+                    var charlen = _activeDecoder.GetChars(bytes, 0, bytelen, chars, 0);
+                    if (charlen > 0)
+                    {
+                        sb.Append(chars, 0, charlen);
+                    }
+                    bytelen = 0;
+                }
+            };
+
             while (ix < count)
             {
-                var input = GetNextByte(buffer, count, ref ix);
+                var input = getNextByte();
 
                 if (input == (byte)Verbs.IAC)
                 {
-                    var inputverb = GetNextByte(buffer, count, ref ix);
+                    var inputverb = getNextByte();
 
                     switch ((Verbs)inputverb)
                     {
@@ -129,7 +156,7 @@ namespace Signet
 
                         case Verbs.SB:
                             subnegotiation = true;
-                            var suboption = GetNextByte(buffer, count, ref ix);
+                            var suboption = getNextByte();
                             Debug.WriteLine("Negotiate sub request {0} {1}", ((Verbs)inputverb).ToString(), ((Options)suboption).ToString());
                             break;
 
@@ -141,7 +168,7 @@ namespace Signet
                         case Verbs.DONT:
                         case Verbs.WILL:
                         case Verbs.WONT:
-                            var inputoption = GetNextByte(buffer, count, ref ix);
+                            var inputoption = getNextByte();
 
                             Debug.WriteLine("Negotiate request {0} {1}", ((Verbs)inputverb).ToString(), ((Options)inputoption).ToString());
 
@@ -186,6 +213,18 @@ namespace Signet
                     // ignore content of subnegotiation
                     Debug.WriteLine("Negotiate sub ignore {0}", input);
                 }
+                else if (input == 0x0e)
+                {
+                    // ascii ShiftOut character - use alternate decoder
+                    appendBytesToSb();
+                    _activeDecoder = _altDecoder;
+                }
+                else if (input == 0x0f)
+                {
+                    // ascii ShiftIn character - use standard decoder
+                    appendBytesToSb();
+                    _activeDecoder = _standardDecoder;
+                }
                 else
                 {
                     // append byte to output
@@ -194,24 +233,16 @@ namespace Signet
                 }
             }
 
-            if (bytelen > 0)
+            appendBytesToSb();
+
+            if (sb.Length > 0)
             {
-                var chars = new char[bytelen];
-                var charlen = _decoder.GetChars(bytes, 0, bytelen, chars, 0);
-                if (charlen > 0)
-                {
-                    return new String(chars, 0, charlen);
-                }
+                return sb.ToString();
             }
-
-            return null;
-        }
-
-        private byte GetNextByte(byte[] buffer, int count, ref int ix)
-        {
-            byte r = (ix < count) ? buffer[ix] : (byte)0;
-            ix += 1;
-            return r;
+            else
+            {
+                return null;
+            }
         }
 
         private void SendTermtype()
