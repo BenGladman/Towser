@@ -9,6 +9,7 @@ Configure the telnet client by editing web.config:
 * `server`: Telnet server
 * `port`: Telnet port, usually 23
 * `encoding`: Character encoding used by the telnet server - a list of encoding names is available at http://msdn.microsoft.com/en-us/library/system.text.encoding(v=vs.110).aspx
+* `altencoding`: Alternate character encoding for use between ASCII ShiftOut (0x0E) and ShiftIn (0x0F) control codes
 * `termtype`: Terminal emulation type (always VT100)
 
 ### Terminal emulator ###
