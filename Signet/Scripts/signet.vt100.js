@@ -1,5 +1,5 @@
 ﻿var init = function () {
-    var vt100 = new VT100(80, 24, 'terminal');
+    var vt100 = new VT100(132, 24, 'terminal');
 
     var connection = $.connection('/telnet');
 

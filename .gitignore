@@ -7,3 +7,4 @@ Signet/bin/
 Signet/obj/Debug/Signet.csproj.FileListAbsolute.txt
 Signet/obj/
 packages/
+Signet/Web.config
