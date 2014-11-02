@@ -10,13 +10,6 @@ namespace Signet
     {
         private static Dictionary<string, TelnetClient> _clients = new Dictionary<string, TelnetClient>();
 
-        private bool _loginAuto = false;
-        private string _loginPrompt;
-        private string _login;
-        private bool _passwordAuto = false;
-        private string _passwordPrompt;
-        private string _password;
-
         protected override Task OnConnected(IRequest request, string connectionId)
         {
             try
@@ -27,59 +20,23 @@ namespace Signet
                 var altEncodingName = WebConfigurationManager.AppSettings["altencoding"];
                 var termtype = WebConfigurationManager.AppSettings["termtype"];
 
-                _loginPrompt = WebConfigurationManager.AppSettings["loginPrompt"];
-                _login = WebConfigurationManager.AppSettings["login"];
-                if (!String.IsNullOrEmpty(_loginPrompt) && !String.IsNullOrEmpty(_login)) { _loginAuto = true; }
-
-                _passwordPrompt = WebConfigurationManager.AppSettings["passwordPrompt"];
-                _password = WebConfigurationManager.AppSettings["password"];
-                if (!String.IsNullOrEmpty(_passwordPrompt) && !String.IsNullOrEmpty(_password)) { _passwordAuto = true; }
-
                 var client = new TelnetClient(server, port, encodingName, altEncodingName, termtype);
                 _clients[connectionId] = client;
 
-                Task.Factory.StartNew(() => SendStream(connectionId));
+                Action<string> sendAction = delegate(string s) { Connection.Send(connectionId, s); };
+                Action disconnectAction = delegate { Disconnect(connectionId); };
+                var loginPrompt = WebConfigurationManager.AppSettings["loginPrompt"];
+                var login = WebConfigurationManager.AppSettings["login"];
+                var passwordPrompt = WebConfigurationManager.AppSettings["passwordPrompt"];
+                var password = WebConfigurationManager.AppSettings["password"];
+
+                Task.Factory.StartNew(() => client.ReadLoop(sendAction, disconnectAction, loginPrompt, login, passwordPrompt, password));
 
                 return null;
             }
             catch (Exception e)
             {
                 return Connection.Send(connectionId, "Initialisation error\n" + e);
-            }
-        }
-
-        private void SendStream(string connectionId)
-        {
-            var client = GetClient(connectionId);
-            if (client != null)
-            {
-                while (client.IsConnected)
-                {
-                    var str = client.Read();
-
-                    if (String.IsNullOrEmpty(str)) { continue; }
-
-                    if (_loginAuto && str.EndsWith(_loginPrompt, StringComparison.Ordinal))
-                    {
-                        client.Write(_login + "\r\n");
-                        _loginAuto = false;
-                        str = str.Remove(str.Length - _loginPrompt.Length);
-                    }
-
-                    if (_passwordAuto && str.EndsWith(_passwordPrompt))
-                    {
-                        client.Write(_password + "\r\n");
-                        _passwordAuto = false;
-                        str = str.Remove(str.Length - _passwordPrompt.Length);
-                    }
-
-                    if (str.Length > 0)
-                    {
-                        Connection.Send(connectionId, str);
-                    }
-                }
-
-                Disconnect(connectionId);
             }
         }
 

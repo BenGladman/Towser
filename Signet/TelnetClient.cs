@@ -260,5 +260,43 @@ namespace Signet
             _stream.WriteByte((byte)Verbs.SE);
         }
 
+        /// <summary>
+        /// Continuously read from telnet until disconnected
+        /// </summary>
+        /// <param name="connectionId"></param>
+        /// <param name="client"></param>
+        public void ReadLoop(Action<string> onRead, Action onDisconnect, string loginPrompt = null, string login = null, string passwordPrompt = null, string password = null)
+        {
+            var loginAuto = (!String.IsNullOrEmpty(loginPrompt) && !String.IsNullOrEmpty(login));
+            var passwordAuto = (!String.IsNullOrEmpty(passwordPrompt) && !String.IsNullOrEmpty(password));
+
+            while (IsConnected)
+            {
+                var str = Read();
+
+                if (String.IsNullOrEmpty(str)) { continue; }
+
+                if (loginAuto && str.EndsWith(loginPrompt, StringComparison.Ordinal))
+                {
+                    Write(login + "\r\n");
+                    loginAuto = false;
+                    str = str.Remove(str.Length - loginPrompt.Length);
+                }
+
+                if (passwordAuto && str.EndsWith(passwordPrompt, StringComparison.Ordinal))
+                {
+                    Write(password + "\r\n");
+                    passwordAuto = false;
+                    str = str.Remove(str.Length - passwordPrompt.Length);
+                }
+
+                if (str.Length > 0)
+                {
+                    onRead(str);
+                }
+            }
+
+            if (onDisconnect != null) { onDisconnect(); }
+        }
     }
 }
