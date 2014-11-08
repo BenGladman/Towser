@@ -1,4 +1,4 @@
-﻿var init = function () {
+﻿var persistentConnectionInit = function () {
     var vt100 = new VT100(132, 24, 'terminal');
 
     var connection = $.connection('/telser');
@@ -111,5 +111,3 @@
         window.addEventListener("keydown", onKeyHandler, false);
     });
 }
-
-$(init);
