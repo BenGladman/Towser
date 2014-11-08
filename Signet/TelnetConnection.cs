@@ -1,36 +1,23 @@
 ﻿using Microsoft.AspNet.SignalR;
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
-using System.Web.Configuration;
 
 namespace Signet
 {
     public class TelnetConnection : PersistentConnection
     {
-        private static Dictionary<string, TelnetClient> _clients = new Dictionary<string, TelnetClient>();
+        private static TelnetClientManager _tcm = new TelnetClientManager();
 
         protected override Task OnConnected(IRequest request, string connectionId)
         {
             try
             {
-                var server = WebConfigurationManager.AppSettings["server"];
-                var port = Int32.Parse(WebConfigurationManager.AppSettings["port"]);
-                var encodingName = WebConfigurationManager.AppSettings["encoding"];
-                var altEncodingName = WebConfigurationManager.AppSettings["altencoding"];
-                var termtype = WebConfigurationManager.AppSettings["termtype"];
+                _tcm.Connect(connectionId);
 
-                var client = new TelnetClient(server, port, encodingName, altEncodingName, termtype);
-                _clients[connectionId] = client;
+                Action<string> sendAction = (s) => Connection.Send(connectionId, s);
+                Action disconnectAction = () => _tcm.Disconnect(connectionId);
 
-                Action<string> sendAction = delegate(string s) { Connection.Send(connectionId, s); };
-                Action disconnectAction = delegate { Disconnect(connectionId); };
-                var loginPrompt = WebConfigurationManager.AppSettings["loginPrompt"];
-                var login = WebConfigurationManager.AppSettings["login"];
-                var passwordPrompt = WebConfigurationManager.AppSettings["passwordPrompt"];
-                var password = WebConfigurationManager.AppSettings["password"];
-
-                Task.Factory.StartNew(() => client.ReadLoop(sendAction, disconnectAction, loginPrompt, login, passwordPrompt, password));
+                Task.Factory.StartNew(() => _tcm.ReadLoop(connectionId, sendAction, disconnectAction));
 
                 return null;
             }
@@ -42,41 +29,14 @@ namespace Signet
 
         protected override Task OnReceived(IRequest request, string connectionId, string data)
         {
-            var client = GetClient(connectionId);
-            if (client != null)
-            {
-                client.Write(data);
-            }
-
+            _tcm.Action(connectionId, (c => c.Write(data)));
             return base.OnReceived(request, connectionId, data);
         }
 
         protected override Task OnDisconnected(IRequest request, string connectionId, bool stopCalled)
         {
-            Disconnect(connectionId);
+            _tcm.Disconnect(connectionId);
             return base.OnDisconnected(request, connectionId, stopCalled);
-        }
-
-        private void Disconnect(string connectionId)
-        {
-            var client = GetClient(connectionId);
-            if (client != null)
-            {
-                client.Disconnect();
-                _clients.Remove(connectionId);
-            }
-        }
-
-        /// <summary>
-        /// Returns the TelnetClient associated with the connectionId, or null
-        /// </summary>
-        /// <param name="connectionId"></param>
-        /// <returns></returns>
-        private TelnetClient GetClient(string connectionId)
-        {
-            TelnetClient client = null;
-            _clients.TryGetValue(connectionId, out client);
-            return client;
         }
     }
 }
