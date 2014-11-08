@@ -3,9 +3,9 @@ using System.Threading.Tasks;
 using Microsoft.Owin;
 using Owin;
 
-[assembly: OwinStartup(typeof(Signet.Startup))]
+[assembly: OwinStartup(typeof(Telser.Startup))]
 
-namespace Signet
+namespace Telser
 {
     public class Startup
     {
@@ -15,7 +15,7 @@ namespace Signet
             app.MapSignalR();
 
             // persistent connection route
-            app.MapSignalR<TelnetConnection>("/telnet");
+            app.MapSignalR<TelserPersistentConnection>("/telser");
         }
     }
 }

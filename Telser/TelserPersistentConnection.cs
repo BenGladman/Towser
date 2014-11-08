@@ -2,9 +2,9 @@
 using System;
 using System.Threading.Tasks;
 
-namespace Signet
+namespace Telser
 {
-    public class TelnetConnection : PersistentConnection
+    public class TelserPersistentConnection : PersistentConnection
     {
         private static TelnetClientManager _tcm = new TelnetClientManager();
 

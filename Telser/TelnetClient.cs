@@ -4,7 +4,7 @@ using System.IO;
 using System.Net.Sockets;
 using System.Text;
 
-namespace Signet
+namespace Telser
 {
     class TelnetClient
     {

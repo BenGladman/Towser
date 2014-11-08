@@ -4,7 +4,7 @@ using System.Linq;
 using System.Web;
 using System.Web.Configuration;
 
-namespace Signet
+namespace Telser
 {
     class TelnetClientManager
     {

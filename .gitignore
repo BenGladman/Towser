@@ -9,3 +9,7 @@ Signet/obj/
 packages/
 Signet/Web.config
 Signet/Scripts/
+Telser/bin/
+Telser/Web.config
+Telser/obj/
+Telser/Scripts/

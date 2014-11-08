@@ -6,9 +6,9 @@ using Microsoft.AspNet.SignalR;
 using System.Threading.Tasks;
 using System.Web.Configuration;
 
-namespace Signet
+namespace Telser
 {
-    public class TelnetHub : Hub
+    public class TelserHub : Hub
     {
         private static TelnetClientManager _tcm = new TelnetClientManager();
 

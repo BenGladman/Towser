@@ -1,7 +1,7 @@
 ﻿var init = function () {
     var vt100 = new VT100(132, 24, 'terminal');
 
-    var connection = $.connection('/telnet');
+    var connection = $.connection('/telser');
 
     // receive from signalR
     connection.received(function (data) {

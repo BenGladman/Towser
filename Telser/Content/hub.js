@@ -1,7 +1,7 @@
 ﻿var init = function () {
     var vt100 = new VT100(132, 24, 'terminal');
 
-    var hub = $.connection.telnetHub;
+    var hub = $.connection.telserHub;
 
     // receive from signalR
     hub.client.write = function (data) {
