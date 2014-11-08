@@ -9,9 +9,13 @@
     <script src="signalr/hubs"></script>
     <script src="Content/VT100.js"></script>
     <script src="Content/hub.js"></script>
+    <script src="Content/persistentConnection.js"></script>
 </head>
 
 <body>
+
+    <button onclick="hubInit();">Init Hub</button>
+    <button onclick="persistentConnectionInit();">Init Persistent Connection</button>
 
     <pre id="terminal"></pre>
 

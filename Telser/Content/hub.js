@@ -1,4 +1,4 @@
-﻿var init = function () {
+﻿var hubInit = function () {
     var vt100 = new VT100(132, 24, 'terminal');
 
     var hub = $.connection.telserHub;
@@ -113,5 +113,3 @@
     window.addEventListener("keypress", onKeyHandler, false);
     window.addEventListener("keydown", onKeyHandler, false);
 }
-
-$(init);
