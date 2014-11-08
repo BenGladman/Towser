@@ -1,15 +1,4 @@
-Signet/Scripts/jquery-1.6.4-vsdoc.js
-Signet/Scripts/jquery-1.6.4.js
-Signet/Scripts/jquery-1.6.4.min.js
-Signet/Scripts/jquery.signalR-2.1.0.js
-Signet/Scripts/jquery.signalR-2.1.0.min.js
-Signet/bin/
-Signet/obj/Debug/Signet.csproj.FileListAbsolute.txt
-Signet/obj/
 packages/
-Signet/Web.config
-Signet/Scripts/
 Telser/bin/
 Telser/Web.config
 Telser/obj/
-Telser/Scripts/
