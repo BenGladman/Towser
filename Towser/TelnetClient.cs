@@ -1,8 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Net.Sockets;
-using System.Text;
 
 namespace Towser
 {
@@ -35,28 +35,23 @@ namespace Towser
 
         private readonly TcpClient _client;
         private readonly NetworkStream _stream;
-        private readonly Encoding _encoding;
-        private readonly Decoder _standardDecoder;
-        private readonly Decoder _altDecoder;
         private readonly string _termtype;
-        private Decoder _activeDecoder;
 
-        public TelnetClient(string hostname, int port, string encodingName, string altEncodingName, string termtype)
+        public TelnetClient(string hostname, int port, string termtype)
         {
             _client = new TcpClient(hostname, port);
             _stream = _client.GetStream();
-            _encoding = Encoding.GetEncoding(encodingName);
-            _standardDecoder = _encoding.GetDecoder();
-            _altDecoder = Encoding.GetEncoding(altEncodingName).GetDecoder();
-            _activeDecoder = _standardDecoder;
             _termtype = termtype;
         }
 
-        public void Write(string data)
+        /// <summary>
+        /// Write bytes to server.
+        /// </summary>
+        /// <param name="bytes"></param>
+        public void Write(IEnumerable<byte> bytes)
         {
             if (!IsConnected) return;
 
-            var bytes = _encoding.GetBytes(data);
             foreach (byte b in bytes)
             {
                 _stream.WriteByte(b);
@@ -65,25 +60,28 @@ namespace Towser
             }
         }
 
-        public string Read()
+        /// <summary>
+        /// Read up to bufferSize bytes from server. Blocking read.
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<byte> Read(int bufferSize)
         {
-            if (!IsConnected) return null;
+            if (!IsConnected) { yield break; }
 
-            const int bufferSize = 1024;
             var buffer = new byte[bufferSize];
 
+            var count = 0;
             try
             {
-                var count = _stream.Read(buffer, 0, bufferSize);
-                var str = ParseTelnet(buffer, count);
-                Debug.WriteLine("Read from stream {0} bytes {1}", count, str);
-                return str;
+                count = _stream.Read(buffer, 0, bufferSize);
             }
             catch (IOException e)
             {
                 Debug.WriteLine("Stream read failed {0}", e);
-                return null;
+                yield break;
             }
+
+            foreach (var b in ParseTelnet(buffer, count)) { yield return b; }
         }
 
         public void Disconnect()
@@ -108,34 +106,16 @@ namespace Towser
         /// <param name="buffer"></param>
         /// <param name="count"></param>
         /// <returns></returns>
-        private string ParseTelnet(byte[] buffer, int count)
+        private IEnumerable<byte> ParseTelnet(byte[] buffer, int count)
         {
-            var bytes = new byte[count];
-            var bytelen = 0;
             bool subnegotiation = false;
             var ix = 0;
-
-            var sb = new StringBuilder();
 
             Func<byte> getNextByte = delegate()
             {
                 byte r = (ix < count) ? buffer[ix] : (byte)0;
                 ix += 1;
                 return r;
-            };
-
-            Action appendBytesToSb = delegate()
-            {
-                if (bytelen > 0)
-                {
-                    var chars = new char[bytelen];
-                    var charlen = _activeDecoder.GetChars(bytes, 0, bytelen, chars, 0);
-                    if (charlen > 0)
-                    {
-                        sb.Append(chars, 0, charlen);
-                    }
-                    bytelen = 0;
-                }
             };
 
             while (ix < count)
@@ -150,8 +130,7 @@ namespace Towser
                     {
                         case Verbs.IAC:
                             //literal IAC = 255 escaped, so append char 255 to output
-                            bytes[bytelen] = inputverb;
-                            bytelen += 1;
+                            yield return inputverb;
                             break;
 
                         case Verbs.SB:
@@ -213,35 +192,10 @@ namespace Towser
                     // ignore content of subnegotiation
                     Debug.WriteLine("Negotiate sub ignore {0}", input);
                 }
-                else if (input == 0x0e)
-                {
-                    // ascii ShiftOut character - use alternate decoder
-                    appendBytesToSb();
-                    _activeDecoder = _altDecoder;
-                }
-                else if (input == 0x0f)
-                {
-                    // ascii ShiftIn character - use standard decoder
-                    appendBytesToSb();
-                    _activeDecoder = _standardDecoder;
-                }
                 else
                 {
-                    // append byte to output
-                    bytes[bytelen] = input;
-                    bytelen += 1;
+                    yield return input;
                 }
-            }
-
-            appendBytesToSb();
-
-            if (sb.Length > 0)
-            {
-                return sb.ToString();
-            }
-            else
-            {
-                return null;
             }
         }
 
@@ -258,45 +212,6 @@ namespace Towser
             }
             _stream.WriteByte((byte)Verbs.IAC);
             _stream.WriteByte((byte)Verbs.SE);
-        }
-
-        /// <summary>
-        /// Continuously read from telnet until disconnected
-        /// </summary>
-        /// <param name="connectionId"></param>
-        /// <param name="client"></param>
-        public void ReadLoop(Action<string> onRead, Action onDisconnect, string loginPrompt = null, string login = null, string passwordPrompt = null, string password = null)
-        {
-            var loginAuto = (!String.IsNullOrEmpty(loginPrompt) && !String.IsNullOrEmpty(login));
-            var passwordAuto = (!String.IsNullOrEmpty(passwordPrompt) && !String.IsNullOrEmpty(password));
-
-            while (IsConnected)
-            {
-                var str = Read();
-
-                if (String.IsNullOrEmpty(str)) { continue; }
-
-                if (loginAuto && str.EndsWith(loginPrompt, StringComparison.Ordinal))
-                {
-                    Write(login + "\r\n");
-                    loginAuto = false;
-                    str = str.Remove(str.Length - loginPrompt.Length);
-                }
-
-                if (passwordAuto && str.EndsWith(passwordPrompt, StringComparison.Ordinal))
-                {
-                    Write(password + "\r\n");
-                    passwordAuto = false;
-                    str = str.Remove(str.Length - passwordPrompt.Length);
-                }
-
-                if (str.Length > 0)
-                {
-                    onRead(str);
-                }
-            }
-
-            if (onDisconnect != null) { onDisconnect(); }
         }
     }
 }

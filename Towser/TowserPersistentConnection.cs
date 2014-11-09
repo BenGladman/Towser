@@ -29,7 +29,7 @@ namespace Towser
 
         protected override Task OnReceived(IRequest request, string connectionId, string data)
         {
-            _tcm.Action(connectionId, (c => c.Write(data)));
+            _tcm.Write(connectionId, data);
             return base.OnReceived(request, connectionId, data);
         }
 

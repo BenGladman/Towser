@@ -35,7 +35,7 @@ namespace Towser
 
         public void KeyPress(string data)
         {
-            _tcm.Action(Context.ConnectionId, (c => c.Write(data)));
+            _tcm.Write(Context.ConnectionId, data);
         }
     }
 }
