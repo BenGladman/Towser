@@ -1,7 +1,7 @@
 ﻿var hubInit = function () {
     var vt100 = new VT100(132, 24, 'terminal');
 
-    var hub = $.connection.telserHub;
+    var hub = $.connection.towserHub;
 
     // receive from signalR
     hub.client.write = function (data) {

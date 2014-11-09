@@ -2,9 +2,9 @@
 using System;
 using System.Threading.Tasks;
 
-namespace Telser
+namespace Towser
 {
-    public class TelserPersistentConnection : PersistentConnection
+    public class TowserPersistentConnection : PersistentConnection
     {
         private static TelnetClientManager _tcm = new TelnetClientManager();
 

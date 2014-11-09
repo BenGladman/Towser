@@ -1,7 +1,7 @@
 ﻿var persistentConnectionInit = function () {
     var vt100 = new VT100(132, 24, 'terminal');
 
-    var connection = $.connection('/telser');
+    var connection = $.connection('/towser');
 
     // receive from signalR
     connection.received(function (data) {

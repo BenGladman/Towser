@@ -3,9 +3,9 @@ using System.Threading.Tasks;
 using Microsoft.Owin;
 using Owin;
 
-[assembly: OwinStartup(typeof(Telser.Startup))]
+[assembly: OwinStartup(typeof(Towser.Startup))]
 
-namespace Telser
+namespace Towser
 {
     public class Startup
     {
@@ -15,7 +15,7 @@ namespace Telser
             app.MapSignalR();
 
             // persistent connection route
-            app.MapSignalR<TelserPersistentConnection>("/telser");
+            app.MapSignalR<TowserPersistentConnection>("/towser");
         }
     }
 }
