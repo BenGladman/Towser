@@ -1,4 +1,4 @@
-# Telnet in the browser using signalR #
+# Telnet in the browser using SignalR #
 
 **Towser** is an application to allow access to telnet services from the browser. An telnet client runs on an IIS web server, and a terminal emulator runs in the browser. These two components communicate using SignalR.
 
