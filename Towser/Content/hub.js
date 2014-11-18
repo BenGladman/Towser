@@ -1,4 +1,5 @@
 ﻿var hubInit = function () {
+
     var vt100 = new VT100(132, 24, 'terminal');
 
     var hub = $.connection.towserHub;
@@ -112,4 +113,5 @@
     vt100.noecho();
     window.addEventListener("keypress", onKeyHandler, false);
     window.addEventListener("keydown", onKeyHandler, false);
+    window.document.getElementById("buttons").style.display = "none";
 }

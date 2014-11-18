@@ -9,8 +9,9 @@ namespace Towser
     {
         private static TelnetClientManager _tcm = new TelnetClientManager();
 
-        protected override Task OnConnected(IRequest request, string connectionId)
+        protected override async Task OnConnected(IRequest request, string connectionId)
         {
+<<<<<<< HEAD
             var encodingName = WebConfigurationManager.AppSettings["encoding"];
             var altEncodingName = WebConfigurationManager.AppSettings["altencoding"];
 
@@ -29,18 +30,21 @@ namespace Towser
             {
                 return Connection.Send(connectionId, "Initialisation error\n" + e);
             }
+=======
+            Action<string> writeToTerminal = (s) => Connection.Send(connectionId, s);
+            var emu = new BaseEmulation(writeToTerminal);
+            await _tcm.Init(connectionId, emu);
+>>>>>>> Use SignalR Hub
         }
 
-        protected override Task OnReceived(IRequest request, string connectionId, string data)
+        protected override async Task OnReceived(IRequest request, string connectionId, string data)
         {
-            _tcm.Write(connectionId, data);
-            return base.OnReceived(request, connectionId, data);
+            await _tcm.Write(connectionId, data);
         }
 
-        protected override Task OnDisconnected(IRequest request, string connectionId, bool stopCalled)
+        protected override async Task OnDisconnected(IRequest request, string connectionId, bool stopCalled)
         {
-            _tcm.Disconnect(connectionId);
-            return base.OnDisconnected(request, connectionId, stopCalled);
+            await _tcm.Disconnect(connectionId);
         }
 
         private class PersistentConnectionTerminal : ITerminal

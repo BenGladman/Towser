@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-using Microsoft.AspNet.SignalR;
+﻿using Microsoft.AspNet.SignalR;
 using System.Threading.Tasks;
-using System.Web.Configuration;
 
 namespace Towser
 {
@@ -12,10 +7,14 @@ namespace Towser
     {
         private static TelnetClientManager _tcm = new TelnetClientManager();
 
-        public override Task OnConnected()
+        public override async Task OnConnected()
         {
             var connectionId = Context.ConnectionId;
+            var emu = new Vt100Emulation(Clients.Caller);
+            await _tcm.Init(connectionId, emu);
+        }
 
+<<<<<<< HEAD
             var encodingName = WebConfigurationManager.AppSettings["encoding"];
             var altEncodingName = WebConfigurationManager.AppSettings["altencoding"];
 
@@ -31,11 +30,16 @@ namespace Towser
             }
 
             return base.OnConnected();
+=======
+        public override async Task OnDisconnected(bool stopCalled)
+        {
+            await _tcm.Disconnect(Context.ConnectionId);
+>>>>>>> Use SignalR Hub
         }
 
-        public void KeyPress(string data)
+        public async Task KeyPress(string data)
         {
-            _tcm.Write(Context.ConnectionId, data);
+            await _tcm.Write(Context.ConnectionId, data);
         }
     }
 }

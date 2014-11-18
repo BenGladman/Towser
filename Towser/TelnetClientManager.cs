@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Web;
+using System.Threading.Tasks;
 using System.Web.Configuration;
 
 namespace Towser
@@ -11,6 +9,7 @@ namespace Towser
     {
         private Dictionary<string, TelnetClient> _clients = new Dictionary<string, TelnetClient>();
 
+<<<<<<< HEAD
         private Encoding _encoding;
 
         public TelnetClientManager()
@@ -20,18 +19,17 @@ namespace Towser
         }
 
         public TelnetClient Connect(string connectionId)
+=======
+        public async Task<TelnetClient> Connect(string connectionId, string server, int port, string termtype, string encodingName)
+>>>>>>> Use SignalR Hub
         {
-            var server = WebConfigurationManager.AppSettings["server"];
-            var port = Int32.Parse(WebConfigurationManager.AppSettings["port"]);
-            var termtype = WebConfigurationManager.AppSettings["termtype"];
-
-            var client = new TelnetClient(server, port, termtype);
+            var client = new TelnetClient(server, port, termtype, encodingName);
             _clients[connectionId] = client;
 
-            return client;
+            return await Task.FromResult(client);
         }
 
-        public void Disconnect(string connectionId)
+        public async Task Disconnect(string connectionId)
         {
             var client = Get(connectionId);
             if (client != null)
@@ -39,6 +37,8 @@ namespace Towser
                 client.Disconnect();
                 _clients.Remove(connectionId);
             }
+
+            await Task.FromResult(true);
         }
 
         /// <summary>
@@ -54,26 +54,48 @@ namespace Towser
         /// <summary>
         /// Write a string to the TelnetClient.
         /// </summary>
-        public void Write(string connectionId, string data)
+        public async Task Write(string connectionId, string data)
         {
             var client = Get(connectionId);
             if (client != null)
             {
-                Write(client, data);
+                client.Write(data);
             }
+            await Task.FromResult(true);
         }
 
-        private void Write(TelnetClient client, string data)
+        /// <summary>
+        /// Initialise a new telnet connection based on the web config.
+        /// </summary>
+        public async Task Init(string connectionId, BaseEmulation emu)
         {
-            var bytes = _encoding.GetBytes(data);
-            client.Write(bytes);
+            var server = WebConfigurationManager.AppSettings["server"];
+            var port = Int32.Parse(WebConfigurationManager.AppSettings["port"]);
+            var termtype = WebConfigurationManager.AppSettings["termtype"];
+            var encodingName = WebConfigurationManager.AppSettings["encoding"];
+            var altEncodingName = WebConfigurationManager.AppSettings["altencoding"];
+
+            emu.SetEncoding(encodingName, altEncodingName);
+
+            var client = await Connect(connectionId, server, port, termtype, encodingName);
+
+            // don't await the looptask, as it runs indefinitely
+            var looptask = Task.Run(() => ReadLoop(client, emu));
         }
 
+<<<<<<< HEAD
         public void ReadLoop(string connectionId, ITerminalEmulation emu)
         {
             var client = Get(connectionId);
             if (client == null) { return; }
 
+=======
+        /// <summary>
+        /// Wait for data from the telnet server and send it to the emulation.
+        /// </summary>
+        private void ReadLoop(TelnetClient client, BaseEmulation emu)
+        {
+>>>>>>> Use SignalR Hub
             var loginPrompt = WebConfigurationManager.AppSettings["loginPrompt"];
             var login = WebConfigurationManager.AppSettings["login"];
             var passwordPrompt = WebConfigurationManager.AppSettings["passwordPrompt"];
@@ -88,14 +110,14 @@ namespace Towser
                 {
                     if (loginAuto && str.EndsWith(loginPrompt, StringComparison.Ordinal))
                     {
-                        Write(client, login + "\r\n");
+                        client.Write(login + "\r\n");
                         loginAuto = false;
                         str = str.Remove(str.Length - loginPrompt.Length);
                     }
 
                     if (passwordAuto && str.EndsWith(passwordPrompt, StringComparison.Ordinal))
                     {
-                        Write(client, password + "\r\n");
+                        client.Write(password + "\r\n");
                         passwordAuto = false;
                         str = str.Remove(str.Length - passwordPrompt.Length);
                     }
@@ -116,7 +138,11 @@ namespace Towser
                 emu.Flush();
             }
 
+<<<<<<< HEAD
             Disconnect(connectionId);
+=======
+            client.Disconnect();
+>>>>>>> Use SignalR Hub
         }
     }
 }

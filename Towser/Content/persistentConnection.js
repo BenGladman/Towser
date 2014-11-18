@@ -109,5 +109,6 @@
         vt100.noecho();
         window.addEventListener("keypress", onKeyHandler, false);
         window.addEventListener("keydown", onKeyHandler, false);
+        window.document.getElementById("buttons").style.display = "none";
     });
 }

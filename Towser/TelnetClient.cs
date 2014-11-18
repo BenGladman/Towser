@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Net.Sockets;
+using System.Text;
 
 namespace Towser
 {
@@ -36,12 +37,14 @@ namespace Towser
         private readonly TcpClient _client;
         private readonly NetworkStream _stream;
         private readonly string _termtype;
+        private readonly Encoding _encoding;
 
-        public TelnetClient(string hostname, int port, string termtype)
+        public TelnetClient(string hostname, int port, string termtype, string encodingName)
         {
             _client = new TcpClient(hostname, port);
             _stream = _client.GetStream();
             _termtype = termtype;
+            _encoding = Encoding.GetEncoding(encodingName);
         }
 
         /// <summary>
@@ -58,6 +61,16 @@ namespace Towser
                 // escape literal IAC
                 if (b == (byte)Verbs.IAC) { _stream.WriteByte(b); }
             }
+        }
+
+        /// <summary>
+        /// Write string to server.
+        /// </summary>
+        /// <param name="data"></param>
+        public void Write(string data)
+        {
+            var bytes = _encoding.GetBytes(data);
+            Write(bytes);
         }
 
         /// <summary>

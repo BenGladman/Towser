@@ -116,7 +116,12 @@
     <Compile Include="Startup.cs" />
     <Compile Include="TelnetClient.cs" />
     <Compile Include="TowserHub.cs" />
+<<<<<<< HEAD
     <Compile Include="BasicEmulation.cs" />
+=======
+    <Compile Include="BaseEmulation.cs" />
+    <Compile Include="Vt100Emulation.cs" />
+>>>>>>> Use SignalR Hub
   </ItemGroup>
   <ItemGroup />
   <PropertyGroup>
