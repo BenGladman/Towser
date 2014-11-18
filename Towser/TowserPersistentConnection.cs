@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNet.SignalR;
 using System;
 using System.Threading.Tasks;
+using System.Web.Configuration;
 
 namespace Towser
 {
@@ -10,14 +11,17 @@ namespace Towser
 
         protected override Task OnConnected(IRequest request, string connectionId)
         {
+            var encodingName = WebConfigurationManager.AppSettings["encoding"];
+            var altEncodingName = WebConfigurationManager.AppSettings["altencoding"];
+
             try
             {
                 _tcm.Connect(connectionId);
 
-                Action<string> sendAction = (s) => Connection.Send(connectionId, s);
-                Action disconnectAction = () => _tcm.Disconnect(connectionId);
+                var term = new PersistentConnectionTerminal();
 
-                Task.Factory.StartNew(() => _tcm.ReadLoop(connectionId, sendAction, disconnectAction));
+                var emu = new BasicEmulation(term, encodingName, altEncodingName);
+                Task.Factory.StartNew(() => _tcm.ReadLoop(connectionId, emu));
 
                 return null;
             }
@@ -37,6 +41,12 @@ namespace Towser
         {
             _tcm.Disconnect(connectionId);
             return base.OnDisconnected(request, connectionId, stopCalled);
+        }
+
+        private class PersistentConnectionTerminal : ITerminal
+        {
+            public void Write(string s) { /* TODO */ }
+            public void Error(string s) { /* TODO */ }
         }
     }
 }

@@ -12,14 +12,11 @@ namespace Towser
         private Dictionary<string, TelnetClient> _clients = new Dictionary<string, TelnetClient>();
 
         private Encoding _encoding;
-        private Encoding _altEncoding;
 
         public TelnetClientManager()
         {
             var encodingName = WebConfigurationManager.AppSettings["encoding"];
-            var altEncodingName = WebConfigurationManager.AppSettings["altencoding"];
             _encoding = Encoding.GetEncoding(encodingName);
-            _altEncoding = Encoding.GetEncoding(altEncodingName);
         }
 
         public TelnetClient Connect(string connectionId)
@@ -72,17 +69,10 @@ namespace Towser
             client.Write(bytes);
         }
 
-        /// <summary>
-        /// Continuously read from telnet until disconnected.
-        /// </summary>
-        public void ReadLoop(string connectionId, Action<string> sendAction, Action disconnectAction)
+        public void ReadLoop(string connectionId, ITerminalEmulation emu)
         {
             var client = Get(connectionId);
             if (client == null) { return; }
-
-            var standardDecoder = _encoding.GetDecoder();
-            var altDecoder = _altEncoding.GetDecoder();
-            var activeDecoder = standardDecoder;
 
             var loginPrompt = WebConfigurationManager.AppSettings["loginPrompt"];
             var login = WebConfigurationManager.AppSettings["login"];
@@ -92,61 +82,10 @@ namespace Towser
             var loginAuto = (!String.IsNullOrEmpty(loginPrompt) && !String.IsNullOrEmpty(login));
             var passwordAuto = (!String.IsNullOrEmpty(passwordPrompt) && !String.IsNullOrEmpty(password));
 
-            const int bufferSize = 1024;
-
-            var outBytes = new byte[bufferSize];
-            var bytelen = 0;
-            var sb = new StringBuilder();
-
-            Action appendBytesToSb = delegate()
+            emu.ScriptFunc = delegate(string str)
             {
-                if (bytelen > 0)
+                if (!String.IsNullOrEmpty(str))
                 {
-                    var chars = new char[bytelen];
-                    var charlen = activeDecoder.GetChars(outBytes, 0, bytelen, chars, 0);
-                    if (charlen > 0)
-                    {
-                        sb.Append(chars, 0, charlen);
-                    }
-                    bytelen = 0;
-                }
-            };
-
-            while (client.IsConnected)
-            {
-                var inBytes = client.Read(bufferSize);
-
-                foreach (var b in inBytes)
-                {
-                    if (b == 0x0e)
-                    {
-                        // ascii ShiftOut character - use alternate decoder
-                        appendBytesToSb();
-                        activeDecoder = altDecoder;
-                    }
-                    else if (b == 0x0f)
-                    {
-                        // ascii ShiftIn character - use standard decoder
-                        appendBytesToSb();
-                        activeDecoder = standardDecoder;
-                    }
-                    else
-                    {
-                        // append byte to output
-                        outBytes[bytelen] = b;
-                        bytelen += 1;
-                    }
-                }
-
-                appendBytesToSb();
-
-                if (sb.Length > 0)
-                {
-                    var str = sb.ToString();
-                    sb.Clear();
-
-                    if (String.IsNullOrEmpty(str)) { continue; }
-
                     if (loginAuto && str.EndsWith(loginPrompt, StringComparison.Ordinal))
                     {
                         Write(client, login + "\r\n");
@@ -160,15 +99,24 @@ namespace Towser
                         passwordAuto = false;
                         str = str.Remove(str.Length - passwordPrompt.Length);
                     }
-
-                    if (str.Length > 0)
-                    {
-                        sendAction(str);
-                    }
                 }
+                return str;
+            };
+
+            const int bufferSize = 1024;
+
+            while (client.IsConnected)
+            {
+                var inBytes = client.Read(bufferSize);
+
+                foreach (var b in inBytes)
+                {
+                    emu.AddByte(b);
+                }
+                emu.Flush();
             }
 
-            if (disconnectAction != null) { disconnectAction(); }
+            Disconnect(connectionId);
         }
     }
 }

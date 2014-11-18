@@ -108,12 +108,15 @@
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ITerminalEmulation.cs" />
     <Compile Include="TelnetClientManager.cs" />
+    <Compile Include="ITerminal.cs" />
     <Compile Include="TowserPersistentConnection.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Startup.cs" />
     <Compile Include="TelnetClient.cs" />
     <Compile Include="TowserHub.cs" />
+    <Compile Include="BasicEmulation.cs" />
   </ItemGroup>
   <ItemGroup />
   <PropertyGroup>

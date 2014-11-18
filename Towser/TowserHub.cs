@@ -8,7 +8,7 @@ using System.Web.Configuration;
 
 namespace Towser
 {
-    public class TowserHub : Hub
+    public class TowserHub : Hub<ITerminal>
     {
         private static TelnetClientManager _tcm = new TelnetClientManager();
 
@@ -16,18 +16,18 @@ namespace Towser
         {
             var connectionId = Context.ConnectionId;
 
+            var encodingName = WebConfigurationManager.AppSettings["encoding"];
+            var altEncodingName = WebConfigurationManager.AppSettings["altencoding"];
+
             try
             {
                 _tcm.Connect(connectionId);
-
-                Action<string> sendAction = (s) => Clients.Caller.write(s);
-                Action disconnectAction = () => _tcm.Disconnect(connectionId);
-
-                Task.Factory.StartNew(() => _tcm.ReadLoop(connectionId, sendAction, disconnectAction));
+                var emu = new BasicEmulation(Clients.Caller, encodingName, altEncodingName);
+                Task.Factory.StartNew(() => _tcm.ReadLoop(connectionId, emu));
             }
             catch (Exception e)
             {
-                Clients.Caller.error("Initialisation error\n" + e);
+                Clients.Caller.Error("Initialisation error\n" + e);
             }
 
             return base.OnConnected();
