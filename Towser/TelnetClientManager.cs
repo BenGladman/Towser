@@ -9,19 +9,7 @@ namespace Towser
     {
         private Dictionary<string, TelnetClient> _clients = new Dictionary<string, TelnetClient>();
 
-<<<<<<< HEAD
-        private Encoding _encoding;
-
-        public TelnetClientManager()
-        {
-            var encodingName = WebConfigurationManager.AppSettings["encoding"];
-            _encoding = Encoding.GetEncoding(encodingName);
-        }
-
-        public TelnetClient Connect(string connectionId)
-=======
         public async Task<TelnetClient> Connect(string connectionId, string server, int port, string termtype, string encodingName)
->>>>>>> Use SignalR Hub
         {
             var client = new TelnetClient(server, port, termtype, encodingName);
             _clients[connectionId] = client;
@@ -83,19 +71,11 @@ namespace Towser
             var looptask = Task.Run(() => ReadLoop(client, emu));
         }
 
-<<<<<<< HEAD
-        public void ReadLoop(string connectionId, ITerminalEmulation emu)
-        {
-            var client = Get(connectionId);
-            if (client == null) { return; }
-
-=======
         /// <summary>
         /// Wait for data from the telnet server and send it to the emulation.
         /// </summary>
         private void ReadLoop(TelnetClient client, BaseEmulation emu)
         {
->>>>>>> Use SignalR Hub
             var loginPrompt = WebConfigurationManager.AppSettings["loginPrompt"];
             var login = WebConfigurationManager.AppSettings["login"];
             var passwordPrompt = WebConfigurationManager.AppSettings["passwordPrompt"];
@@ -138,11 +118,7 @@ namespace Towser
                 emu.Flush();
             }
 
-<<<<<<< HEAD
-            Disconnect(connectionId);
-=======
             client.Disconnect();
->>>>>>> Use SignalR Hub
         }
     }
 }
