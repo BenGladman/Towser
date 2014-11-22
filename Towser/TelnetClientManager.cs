@@ -9,15 +9,17 @@ namespace Towser
     {
         private Dictionary<string, TelnetClient> _clients = new Dictionary<string, TelnetClient>();
 
-        public async Task<TelnetClient> Connect(string connectionId, string server, int port, string termtype, string encodingName)
+        private async Task<TelnetClient> Connect(string connectionId, string server, int port, string termtype, string encodingName)
         {
             var client = new TelnetClient(server, port, termtype, encodingName);
             _clients[connectionId] = client;
 
-            return await Task.FromResult(client);
+            await client.ConnectAsync();
+
+            return client;
         }
 
-        public async Task Disconnect(string connectionId)
+        public void Disconnect(string connectionId)
         {
             var client = Get(connectionId);
             if (client != null)
@@ -25,14 +27,13 @@ namespace Towser
                 client.Disconnect();
                 _clients.Remove(connectionId);
             }
-
-            await Task.FromResult(true);
+            return;
         }
 
         /// <summary>
         /// Returns the TelnetClient associated with the connectionId, or null.
         /// </summary>
-        public TelnetClient Get(string connectionId)
+        private TelnetClient Get(string connectionId)
         {
             TelnetClient client = null;
             _clients.TryGetValue(connectionId, out client);
@@ -42,14 +43,13 @@ namespace Towser
         /// <summary>
         /// Write a string to the TelnetClient.
         /// </summary>
-        public async Task Write(string connectionId, string data)
+        public void Write(string connectionId, string data)
         {
             var client = Get(connectionId);
             if (client != null)
             {
                 client.Write(data);
             }
-            await Task.FromResult(true);
         }
 
         /// <summary>
@@ -68,14 +68,18 @@ namespace Towser
             var client = await Connect(connectionId, server, port, termtype, encodingName);
 
             // don't await the looptask, as it runs indefinitely
-            var looptask = Task.Run(() => ReadLoop(client, emu));
+            var looptask = Task.Run(() => ReadLoop(connectionId, emu));
+
         }
 
         /// <summary>
         /// Wait for data from the telnet server and send it to the emulation.
         /// </summary>
-        private void ReadLoop(TelnetClient client, BaseEmulation emu)
+        private async Task ReadLoop(string connectionId, BaseEmulation emu)
         {
+            var client = Get(connectionId);
+            if (client == null) { return; }
+
             var loginPrompt = WebConfigurationManager.AppSettings["loginPrompt"];
             var login = WebConfigurationManager.AppSettings["login"];
             var passwordPrompt = WebConfigurationManager.AppSettings["passwordPrompt"];
@@ -109,7 +113,7 @@ namespace Towser
 
             while (client.IsConnected)
             {
-                var inBytes = client.Read(bufferSize);
+                var inBytes = await client.ReadAsync(bufferSize);
 
                 foreach (var b in inBytes)
                 {
@@ -118,7 +122,7 @@ namespace Towser
                 emu.Flush();
             }
 
-            client.Disconnect();
+            Disconnect(connectionId);
         }
     }
 }

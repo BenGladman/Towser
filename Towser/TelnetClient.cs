@@ -4,6 +4,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading.Tasks;
+using System.Linq;
 
 namespace Towser
 {
@@ -35,16 +37,36 @@ namespace Towser
         }
 
         private readonly TcpClient _client;
-        private readonly NetworkStream _stream;
+        private readonly string _hostname;
+        private readonly int _port;
         private readonly string _termtype;
         private readonly Encoding _encoding;
 
         public TelnetClient(string hostname, int port, string termtype, string encodingName)
         {
-            _client = new TcpClient(hostname, port);
-            _stream = _client.GetStream();
+            _hostname = hostname;
+            _port = port;
             _termtype = termtype;
             _encoding = Encoding.GetEncoding(encodingName);
+            _client = new TcpClient();
+        }
+
+        private NetworkStream _stream;
+
+        public async Task ConnectAsync()
+        {
+            if (IsConnected) { return; }
+            await _client.ConnectAsync(_hostname, _port);
+            _stream = _client.GetStream();
+        }
+
+        public void Disconnect()
+        {
+            if (IsConnected)
+            {
+                _stream.Close();
+                _client.Close();
+            }
         }
 
         /// <summary>
@@ -74,41 +96,32 @@ namespace Towser
         }
 
         /// <summary>
-        /// Read up to bufferSize bytes from server. Blocking read.
+        /// Read up to bufferSize bytes from server.
         /// </summary>
         /// <returns></returns>
-        public IEnumerable<byte> Read(int bufferSize)
+        public async Task<IEnumerable<byte>> ReadAsync(int bufferSize)
         {
-            if (!IsConnected) { yield break; }
+            if (!IsConnected) { return Enumerable.Empty<byte>(); }
 
             var buffer = new byte[bufferSize];
 
             var count = 0;
             try
             {
-                count = _stream.Read(buffer, 0, bufferSize);
+                count = await _stream.ReadAsync(buffer, 0, bufferSize);
             }
             catch (IOException e)
             {
                 Debug.WriteLine("Stream read failed {0}", e);
-                yield break;
+                return Enumerable.Empty<byte>();
             }
 
-            foreach (var b in ParseTelnet(buffer, count)) { yield return b; }
-        }
-
-        public void Disconnect()
-        {
-            if (IsConnected)
-            {
-                _stream.Close();
-                _client.Close();
-            }
+            return ParseTelnet(buffer, count);
         }
 
         public bool IsConnected
         {
-            get { return _client.Connected; }
+            get { return _client.Connected && _stream != null; }
         }
 
         /// <summary>

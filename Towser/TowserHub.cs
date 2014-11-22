@@ -7,21 +7,22 @@ namespace Towser
     {
         private static TelnetClientManager _tcm = new TelnetClientManager();
 
-        public override async Task OnConnected()
+        public override Task OnConnected()
         {
             var connectionId = Context.ConnectionId;
             var emu = new Vt100Emulation(Clients.Caller);
-            await _tcm.Init(connectionId, emu);
+            return _tcm.Init(connectionId, emu);
         }
 
-        public override async Task OnDisconnected(bool stopCalled)
+        public override Task OnDisconnected(bool stopCalled)
         {
-            await _tcm.Disconnect(Context.ConnectionId);
+            _tcm.Disconnect(Context.ConnectionId);
+            return base.OnDisconnected(stopCalled);
         }
 
-        public async Task KeyPress(string data)
+        public void KeyPress(string data)
         {
-            await _tcm.Write(Context.ConnectionId, data);
+            _tcm.Write(Context.ConnectionId, data);
         }
     }
 }

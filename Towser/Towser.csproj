@@ -108,7 +108,6 @@
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ITerminalEmulation.cs" />
     <Compile Include="TelnetClientManager.cs" />
     <Compile Include="ITerminal.cs" />
     <Compile Include="TowserPersistentConnection.cs" />
