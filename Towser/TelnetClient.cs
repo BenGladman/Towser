@@ -2,10 +2,9 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Net.Sockets;
-using System.Text;
-using System.Threading.Tasks;
 using System.Linq;
+using System.Net.Sockets;
+using System.Threading.Tasks;
 
 namespace Towser
 {
@@ -36,28 +35,19 @@ namespace Towser
             EnvironmentVariables = 36
         }
 
-        private readonly TcpClient _client;
-        private readonly string _hostname;
-        private readonly int _port;
-        private readonly string _termtype;
-        private readonly Encoding _encoding;
-
-        public TelnetClient(string hostname, int port, string termtype, string encodingName)
-        {
-            _hostname = hostname;
-            _port = port;
-            _termtype = termtype;
-            _encoding = Encoding.GetEncoding(encodingName);
-            _client = new TcpClient();
-        }
-
+        private readonly TcpClient _client = new TcpClient();
+        private string _termtype;
         private NetworkStream _stream;
 
-        public async Task ConnectAsync()
+        public TelnetStreamWriter StreamWriter { get; private set; }
+
+        public async Task ConnectAsync(string hostname, int port, string termtype, string encodingName)
         {
             if (IsConnected) { return; }
-            await _client.ConnectAsync(_hostname, _port);
+            _termtype = termtype;
+            await _client.ConnectAsync(hostname, port);
             _stream = _client.GetStream();
+            StreamWriter = new TelnetStreamWriter(_stream, encodingName);
         }
 
         public void Disconnect()
@@ -67,32 +57,6 @@ namespace Towser
                 _stream.Close();
                 _client.Close();
             }
-        }
-
-        /// <summary>
-        /// Write bytes to server.
-        /// </summary>
-        /// <param name="bytes"></param>
-        public void Write(IEnumerable<byte> bytes)
-        {
-            if (!IsConnected) return;
-
-            foreach (byte b in bytes)
-            {
-                _stream.WriteByte(b);
-                // escape literal IAC
-                if (b == (byte)Verbs.IAC) { _stream.WriteByte(b); }
-            }
-        }
-
-        /// <summary>
-        /// Write string to server.
-        /// </summary>
-        /// <param name="data"></param>
-        public void Write(string data)
-        {
-            var bytes = _encoding.GetBytes(data);
-            Write(bytes);
         }
 
         /// <summary>
@@ -197,9 +161,9 @@ namespace Towser
                             }
 
                             Debug.WriteLine("Negotiate response {0} {1}", ((Verbs)responseverb).ToString(), ((Options)inputoption).ToString());
-                            _stream.WriteByte((byte)Verbs.IAC);
-                            _stream.WriteByte(responseverb);
-                            _stream.WriteByte((byte)inputoption);
+                            StreamWriter.AddByte((byte)Verbs.IAC);
+                            StreamWriter.AddByte(responseverb);
+                            StreamWriter.AddByte((byte)inputoption);
 
                             if (inputoption == (byte)Options.TerminalType && responseverb == (byte)Verbs.WILL)
                             {
@@ -212,6 +176,7 @@ namespace Towser
                             Debug.WriteLine("Negotiate ignore {0}", ((Verbs)inputverb).ToString(), null);
                             break;
                     }
+                    StreamWriter.Flush();
                 }
                 else if (subnegotiation)
                 {
@@ -228,16 +193,16 @@ namespace Towser
         private void SendTermtype()
         {
             Debug.WriteLine("Negotiate send termtype {0}", _termtype, null);
-            _stream.WriteByte((byte)Verbs.IAC);
-            _stream.WriteByte((byte)Verbs.SB);
-            _stream.WriteByte((byte)Options.TerminalType);
-            _stream.WriteByte((byte)0);
+            StreamWriter.AddByte((byte)Verbs.IAC);
+            StreamWriter.AddByte((byte)Verbs.SB);
+            StreamWriter.AddByte((byte)Options.TerminalType);
+            StreamWriter.AddByte((byte)0);
             foreach (char ch in _termtype)
             {
-                _stream.WriteByte((byte)ch);
+                StreamWriter.AddByte((byte)ch);
             }
-            _stream.WriteByte((byte)Verbs.IAC);
-            _stream.WriteByte((byte)Verbs.SE);
+            StreamWriter.AddByte((byte)Verbs.IAC);
+            StreamWriter.AddByte((byte)Verbs.SE);
         }
     }
 }

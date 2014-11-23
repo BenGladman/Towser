@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Towser
 {
@@ -32,7 +33,7 @@ namespace Towser
         /// Runs after each Flush().
         /// The script function is passed the data from the server (as a decoded string), and returns the string to send to the terminal.
         /// </summary>
-        public Func<string, string> ScriptFunc { private get; set; }
+        public Func<string, Task<string>> ScriptFunc { private get; set; }
 
         private const int _bufferSize = 1024;
 
@@ -61,7 +62,7 @@ namespace Towser
             }
         }
 
-        public virtual void AddByte(byte b)
+        public virtual async Task AddByte(byte b)
         {
             if (b == 0x0e)
             {
@@ -80,18 +81,18 @@ namespace Towser
                 // append byte to output
                 _outBytes[_bytelen] = b;
                 _bytelen += 1;
-                if (_bytelen > _bufferSize) { Flush(); }
+                if (_bytelen > _bufferSize) { await Flush(); }
             }
         }
 
-        public void Flush()
+        public async Task Flush()
         {
             AppendBytesToSb();
 
             var str = _sb.ToString();
             _sb.Clear();
 
-            if (str.Length > 0 && ScriptFunc != null) { str = ScriptFunc(str); }
+            if (str.Length > 0 && ScriptFunc != null) { str = await ScriptFunc(str); }
 
             if (str.Length > 0)
             {

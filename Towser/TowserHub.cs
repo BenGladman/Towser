@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNet.SignalR;
+﻿using System.Web.Hosting;
+using Microsoft.AspNet.SignalR;
 using System.Threading.Tasks;
 
 namespace Towser
@@ -7,11 +8,12 @@ namespace Towser
     {
         private static TelnetClientManager _tcm = new TelnetClientManager();
 
-        public override Task OnConnected()
+        public override async Task OnConnected()
         {
             var connectionId = Context.ConnectionId;
             var emu = new Vt100Emulation(Clients.Caller);
-            return _tcm.Init(connectionId, emu);
+            await _tcm.Init(connectionId, emu);
+            HostingEnvironment.QueueBackgroundWorkItem((ct) => _tcm.ReadLoop(connectionId, emu));
         }
 
         public override Task OnDisconnected(bool stopCalled)
@@ -20,9 +22,9 @@ namespace Towser
             return base.OnDisconnected(stopCalled);
         }
 
-        public void KeyPress(string data)
+        public async Task KeyPress(string data)
         {
-            _tcm.Write(Context.ConnectionId, data);
+            await _tcm.Write(Context.ConnectionId, data);
         }
     }
 }

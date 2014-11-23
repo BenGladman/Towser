@@ -11,11 +11,9 @@ namespace Towser
 
         private async Task<TelnetClient> Connect(string connectionId, string server, int port, string termtype, string encodingName)
         {
-            var client = new TelnetClient(server, port, termtype, encodingName);
+            var client = new TelnetClient();
+            await client.ConnectAsync(server, port, termtype, encodingName);
             _clients[connectionId] = client;
-
-            await client.ConnectAsync();
-
             return client;
         }
 
@@ -43,12 +41,12 @@ namespace Towser
         /// <summary>
         /// Write a string to the TelnetClient.
         /// </summary>
-        public void Write(string connectionId, string data)
+        public async Task Write(string connectionId, string data)
         {
             var client = Get(connectionId);
             if (client != null)
             {
-                client.Write(data);
+                await client.StreamWriter.WriteAsync(data);
             }
         }
 
@@ -66,16 +64,12 @@ namespace Towser
             emu.SetEncoding(encodingName, altEncodingName);
 
             var client = await Connect(connectionId, server, port, termtype, encodingName);
-
-            // don't await the looptask, as it runs indefinitely
-            var looptask = Task.Run(() => ReadLoop(connectionId, emu));
-
         }
 
         /// <summary>
         /// Wait for data from the telnet server and send it to the emulation.
         /// </summary>
-        private async Task ReadLoop(string connectionId, BaseEmulation emu)
+        public async Task ReadLoop(string connectionId, BaseEmulation emu)
         {
             var client = Get(connectionId);
             if (client == null) { return; }
@@ -88,26 +82,26 @@ namespace Towser
             var loginAuto = (!String.IsNullOrEmpty(loginPrompt) && !String.IsNullOrEmpty(login));
             var passwordAuto = (!String.IsNullOrEmpty(passwordPrompt) && !String.IsNullOrEmpty(password));
 
-            emu.ScriptFunc = delegate(string str)
-            {
-                if (!String.IsNullOrEmpty(str))
+            emu.ScriptFunc = async (string str) =>
                 {
-                    if (loginAuto && str.EndsWith(loginPrompt, StringComparison.Ordinal))
+                    if (!String.IsNullOrEmpty(str))
                     {
-                        client.Write(login + "\r\n");
-                        loginAuto = false;
-                        str = str.Remove(str.Length - loginPrompt.Length);
-                    }
+                        if (loginAuto && str.EndsWith(loginPrompt, StringComparison.Ordinal))
+                        {
+                            await client.StreamWriter.WriteAsync(login + "\r\n");
+                            loginAuto = false;
+                            str = str.Remove(str.Length - loginPrompt.Length);
+                        }
 
-                    if (passwordAuto && str.EndsWith(passwordPrompt, StringComparison.Ordinal))
-                    {
-                        client.Write(password + "\r\n");
-                        passwordAuto = false;
-                        str = str.Remove(str.Length - passwordPrompt.Length);
+                        if (passwordAuto && str.EndsWith(passwordPrompt, StringComparison.Ordinal))
+                        {
+                            await client.StreamWriter.WriteAsync(password + "\r\n");
+                            passwordAuto = false;
+                            str = str.Remove(str.Length - passwordPrompt.Length);
+                        }
                     }
-                }
-                return str;
-            };
+                    return str;
+                };
 
             const int bufferSize = 1024;
 
@@ -117,9 +111,9 @@ namespace Towser
 
                 foreach (var b in inBytes)
                 {
-                    emu.AddByte(b);
+                    await emu.AddByte(b);
                 }
-                emu.Flush();
+                await emu.Flush();
             }
 
             Disconnect(connectionId);
