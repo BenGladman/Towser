@@ -190,20 +190,6 @@ namespace Towser
         {
             switch (_c1control)
             {
-                case 'K':
-                    // Erase in line
-                    _terminal.Clear(TerminalClearType.EndOfLine);
-                    break;
-
-                case 'H':
-                    // Move to 0,0
-                    _terminal.Move(0, 0);
-                    break;
-
-                case 'J':
-                    _terminal.Clear(TerminalClearType.BottomOfScreen);
-                    break;
-
                 case '[':
                     ExecCsi();
                     break;
@@ -219,32 +205,45 @@ namespace Towser
 
         private void ExecCsi()
         {
+            int col, row;
+
             switch (_csicommand)
             {
                 case 'A':
                     // Cursor Up            <ESC>[{COUNT}A
-                    _terminal.MoveRow(-(Math.Max(1, _csiparams[0])), true);
+                    row = -(Math.Max(1, _csiparams[0]));
+                    _terminal.MoveRow(row, true);
                     break;
 
                 case 'B':
                     // Cursor Down          <ESC>[{COUNT}B
-                    _terminal.MoveRow((Math.Max(1, _csiparams[0])), true);
+                    row = (Math.Max(1, _csiparams[0]));
+                    _terminal.MoveRow(row, true);
                     break;
 
                 case 'C':
                     // Cursor Forward       <ESC>[{COUNT}C
-                    _terminal.MoveCol((Math.Max(1, _csiparams[0])), true);
+                    col = (Math.Max(1, _csiparams[0]));
+                    _terminal.MoveCol(col, true);
                     break;
 
                 case 'D':
                     // Cursor Backward      <ESC>[{COUNT}D
-                    _terminal.MoveCol(-(Math.Max(1, _csiparams[0])), true);
+                    col = -(Math.Max(1, _csiparams[0]));
+                    _terminal.MoveCol(col, true);
                     break;
 
                 case 'f':
                 case 'H':
                     // Cursor Home          <ESC>[{ROW};{COLUMN}H
-                    _terminal.Move(_csiparams[0] - 1, _csiparams[1] - 1);
+                    row = Math.Max(0, _csiparams[0] - 1);
+                    col = Math.Max(0, _csiparams[1] - 1);
+                    _terminal.Move(row, col);
+                    break;
+
+                case 'K':
+                    // Erase in line
+                    _terminal.Clear(TerminalClearType.EndOfLine);
                     break;
 
                 case 'J':
