@@ -5,13 +5,13 @@ using System.Threading.Tasks;
 namespace Towser
 {
     /// <summary>
-    /// The BaseEmulation decodes the bytes received from the server into strings and writes the strings to the terminal.
+    /// Decodes the bytes received from the server into strings and writes the strings to the terminal.
     /// </summary>
-    public class BaseEmulation
+    public class TermDecoder
     {
         private readonly Action<string> _writeToTerminal;
 
-        public BaseEmulation(Action<string> writeToTerminal)
+        public TermDecoder(Action<string> writeToTerminal)
         {
             _writeToTerminal = writeToTerminal;
         }

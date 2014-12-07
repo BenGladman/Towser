@@ -2,12 +2,145 @@
 
     var vt100 = new VT100(132, 24, 'terminal');
 
+    var refreshTimeoutId = null;
+
+    var refresh = function () {
+        window.clearTimeout(refreshTimeoutId);
+        refreshTimeoutId = window.setTimeout(function () { vt100.refresh(); }, 0);
+    }
+
     var hub = $.connection.towserHub;
 
     // receive from signalR
     hub.client.write = function (data) {
-        console.log("receive " + data);
-        vt100.write(data);
+        //vt100.write(data);
+        for (i = 0; i < data.length; ++i) {
+            ch = data.charAt(i);
+            vt100.addch(ch);
+        }
+        refresh();
+    }
+
+    hub.client.clear = function (type) {
+        switch (type) {
+            case 0: vt100.clear(); break;
+            case 1: vt100.clrtoeol(); break;
+            case 2: vt100.clrtobot(); break;
+        }
+        refresh();
+    }
+
+    hub.client.Move = function (row, col) {
+        vt100.move(row, col);
+        refresh();
+    }
+
+    hub.client.MoveRow = function (row, relativeRow) {
+        if (relativeRow) { row += vt100.row_; }
+        vt100.move(row, vt100.col_);
+        refresh();
+    }
+
+    hub.client.MoveCol = function (col, relativeCol) {
+        if (relativeCol) { col += vt100.col_; }
+        vt100.move(vt100.row_, col);
+        refresh();
+    }
+
+    hub.client.Attr = function (attr) {
+        switch (attr) {
+            case 0:
+                vt100.standend();
+                vt100.fgset(vt100.bkgd_.fg);
+                vt100.bgset(vt100.bkgd_.bg);
+                break;
+            case 1:
+                vt100.attron(VT100.A_BOLD);
+                break;
+            case 2:
+                vt100.attron(VT100.A_DIM);
+                break;
+            case 4:
+                vt100.attron(VT100.A_UNDERLINE);
+                break;
+            case 5:
+                vt100.attron(VT100.A_BLINK);
+                break;
+            case 7:
+                vt100.attron(VT100.A_REVERSE);
+                break;
+            case 21:
+                vt100.attroff(VT100.A_BOLD);
+                break;
+            case 22:
+                vt100.attroff(VT100.A_BOLD);
+                vt100.attroff(VT100.A_DIM);
+                break;
+            case 24:
+                vt100.attroff(VT100.A_UNDERLINE);
+                break;
+            case 25:
+                vt100.attroff(VT100.A_BLINK);
+                break;
+            case 27:
+                vt100.attroff(VT100.A_REVERSE);
+                break;
+            case 30:
+                vt100.fgset(VT100.COLOR_BLACK);
+                break;
+            case 31:
+                vt100.fgset(VT100.COLOR_RED);
+                break;
+            case 32:
+                vt100.fgset(VT100.COLOR_GREEN);
+                break;
+            case 33:
+                vt100.fgset(VT100.COLOR_YELLOW);
+                break;
+            case 34:
+                vt100.fgset(VT100.COLOR_BLUE);
+                break;
+            case 35:
+                vt100.fgset(VT100.COLOR_MAGENTA);
+                break;
+            case 36:
+                vt100.fgset(VT100.COLOR_CYAN);
+                break;
+            case 37:
+                vt100.fgset(VT100.COLOR_WHITE);
+                break;
+            case 39:
+                vt100.fgset(vt100.bkgd_.fg);
+                break;
+            case 40:
+                vt100.bgset(VT100.COLOR_BLACK);
+                break;
+            case 41:
+                vt100.bgset(VT100.COLOR_RED);
+                break;
+            case 42:
+                vt100.bgset(VT100.COLOR_GREEN);
+                break;
+            case 43:
+                vt100.bgset(VT100.COLOR_YELLOW);
+                break;
+            case 44:
+                vt100.bgset(VT100.COLOR_BLUE);
+                break;
+            case 45:
+                vt100.bgset(VT100.COLOR_MAGENTA);
+                break;
+            case 46:
+                vt100.bgset(VT100.COLOR_CYAN);
+                break;
+            case 47:
+                vt100.bgset(VT100.COLOR_WHITE);
+                break;
+            case 49:
+                vt100.bgset(vt100.bkgd_.bg);
+                break;
+        }
+        refresh();
     }
 
     $.connection.hub.start()

@@ -53,7 +53,7 @@ namespace Towser
         /// <summary>
         /// Initialise a new telnet connection based on the web config.
         /// </summary>
-        public async Task Init(string connectionId, BaseEmulation emu)
+        public async Task Init(string connectionId, TermDecoder decoder)
         {
             var server = WebConfigurationManager.AppSettings["server"];
             var port = Int32.Parse(WebConfigurationManager.AppSettings["port"]);
@@ -61,7 +61,7 @@ namespace Towser
             var encodingName = WebConfigurationManager.AppSettings["encoding"];
             var altEncodingName = WebConfigurationManager.AppSettings["altencoding"];
 
-            emu.SetEncoding(encodingName, altEncodingName);
+            decoder.SetEncoding(encodingName, altEncodingName);
 
             var client = await Connect(connectionId, server, port, termtype, encodingName);
         }
@@ -69,7 +69,7 @@ namespace Towser
         /// <summary>
         /// Wait for data from the telnet server and send it to the emulation.
         /// </summary>
-        public async Task ReadLoop(string connectionId, BaseEmulation emu)
+        public async Task ReadLoop(string connectionId, TermDecoder decoder)
         {
             var client = Get(connectionId);
             if (client == null) { return; }
@@ -82,7 +82,7 @@ namespace Towser
             var loginAuto = (!String.IsNullOrEmpty(loginPrompt) && !String.IsNullOrEmpty(login));
             var passwordAuto = (!String.IsNullOrEmpty(passwordPrompt) && !String.IsNullOrEmpty(password));
 
-            emu.ScriptFunc = async (string str) =>
+            decoder.ScriptFunc = async (string str) =>
                 {
                     if (!String.IsNullOrEmpty(str))
                     {
@@ -111,9 +111,9 @@ namespace Towser
 
                 foreach (var b in inBytes)
                 {
-                    await emu.AddByte(b);
+                    await decoder.AddByte(b);
                 }
-                await emu.Flush();
+                await decoder.Flush();
             }
 
             Disconnect(connectionId);

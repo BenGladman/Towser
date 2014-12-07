@@ -116,8 +116,8 @@
     <Compile Include="Startup.cs" />
     <Compile Include="TelnetClient.cs" />
     <Compile Include="TowserHub.cs" />
-    <Compile Include="BaseEmulation.cs" />
-    <Compile Include="Vt100Emulation.cs" />
+    <Compile Include="TermDecoder.cs" />
+    <Compile Include="AnsiDecoder.cs" />
   </ItemGroup>
   <ItemGroup />
   <PropertyGroup>

@@ -12,9 +12,9 @@ namespace Towser
         protected override async Task OnConnected(IRequest request, string connectionId)
         {
             Action<string> writeToTerminal = (s) => Connection.Send(connectionId, s);
-            var emu = new BaseEmulation(writeToTerminal);
-            await _tcm.Init(connectionId, emu);
-            HostingEnvironment.QueueBackgroundWorkItem((ct) => _tcm.ReadLoop(connectionId, emu));
+            var decoder = new TermDecoder(writeToTerminal);
+            await _tcm.Init(connectionId, decoder);
+            HostingEnvironment.QueueBackgroundWorkItem((ct) => _tcm.ReadLoop(connectionId, decoder));
         }
 
         protected override async Task OnReceived(IRequest request, string connectionId, string data)

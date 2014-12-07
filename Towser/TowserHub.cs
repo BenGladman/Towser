@@ -11,9 +11,9 @@ namespace Towser
         public override async Task OnConnected()
         {
             var connectionId = Context.ConnectionId;
-            var emu = new Vt100Emulation(Clients.Caller);
-            await _tcm.Init(connectionId, emu);
-            HostingEnvironment.QueueBackgroundWorkItem((ct) => _tcm.ReadLoop(connectionId, emu));
+            var decoder = new AnsiDecoder(Clients.Caller);
+            await _tcm.Init(connectionId, decoder);
+            HostingEnvironment.QueueBackgroundWorkItem((ct) => _tcm.ReadLoop(connectionId, decoder));
         }
 
         public override Task OnDisconnected(bool stopCalled)
