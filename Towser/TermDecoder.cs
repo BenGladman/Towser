@@ -9,9 +9,9 @@ namespace Towser
     /// </summary>
     public class TermDecoder
     {
-        private readonly Action<string> _writeToTerminal;
+        private readonly Func<string, Task> _writeToTerminal;
 
-        public TermDecoder(Action<string> writeToTerminal)
+        public TermDecoder(Func<string, Task> writeToTerminal)
         {
             _writeToTerminal = writeToTerminal;
         }
@@ -96,7 +96,7 @@ namespace Towser
 
             if (str.Length > 0)
             {
-                _writeToTerminal(str);
+                await _writeToTerminal(str);
             }
         }
     }

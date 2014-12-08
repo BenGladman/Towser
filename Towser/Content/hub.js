@@ -4,22 +4,24 @@
 
     var refreshTimeoutId = null;
 
+    var refreshFunc = function () {
+        refreshTimeoutId = null;
+        vt100.refresh();
+    };
+
     var refresh = function () {
-        window.clearTimeout(refreshTimeoutId);
-        refreshTimeoutId = window.setTimeout(function () { vt100.refresh(); }, 0);
-    }
+        if (refreshTimeoutId == null) {
+            refreshTimeoutId = window.setTimeout(refreshFunc, 10);
+        }
+    };
 
     var hub = $.connection.towserHub;
 
     // receive from signalR
     hub.client.write = function (data) {
-        //vt100.write(data);
-        for (i = 0; i < data.length; ++i) {
-            ch = data.charAt(i);
-            vt100.addch(ch);
-        }
+        vt100.addstr(data);
         refresh();
-    }
+    };
 
     hub.client.clear = function (type) {
         switch (type) {
@@ -28,26 +30,26 @@
             case 2: vt100.clrtobot(); break;
         }
         refresh();
-    }
+    };
 
-    hub.client.Move = function (row, col) {
+    hub.client.move = function (row, col) {
         vt100.move(row, col);
         refresh();
-    }
+    };
 
-    hub.client.MoveRow = function (row, relativeRow) {
+    hub.client.moveRow = function (row, relativeRow) {
         if (relativeRow) { row += vt100.row_; }
         vt100.move(row, vt100.col_);
         refresh();
-    }
+    };
 
-    hub.client.MoveCol = function (col, relativeCol) {
+    hub.client.moveCol = function (col, relativeCol) {
         if (relativeCol) { col += vt100.col_; }
         vt100.move(vt100.row_, col);
         refresh();
-    }
+    };
 
-    hub.client.Attr = function (attr) {
+    hub.client.attr = function (attr) {
         switch (attr) {
             case 0:
                 vt100.standend();
@@ -55,9 +57,11 @@
                 vt100.bgset(vt100.bkgd_.bg);
                 break;
             case 1:
+                vt100.attroff(VT100.A_DIM);
                 vt100.attron(VT100.A_BOLD);
                 break;
             case 2:
+                vt100.attroff(VT100.A_BOLD)
                 vt100.attron(VT100.A_DIM);
                 break;
             case 4:
@@ -141,7 +145,11 @@
                 break;
         }
         refresh();
-    }
+    };
+
+    hub.client.attrs = function (attrs) {
+        attrs.forEach(hub.client.attr);
+    };
 
     $.connection.hub.start()
         .done(function(){ console.log('Now connected, connection ID=' + $.connection.hub.id); })

@@ -181,17 +181,17 @@ namespace Towser
             if (_c1control != '\0')
             {
                 await Flush();
-                ExecC1();
+                await ExecC1();
             }
             _escapeState = EscapeState.Normal;
         }
 
-        private void ExecC1()
+        private async Task ExecC1()
         {
             switch (_c1control)
             {
                 case '[':
-                    ExecCsi();
+                    await ExecCsi();
                     break;
 
                 case ']':
@@ -203,7 +203,7 @@ namespace Towser
             }
         }
 
-        private void ExecCsi()
+        private async Task ExecCsi()
         {
             int col, row;
 
@@ -212,25 +212,25 @@ namespace Towser
                 case 'A':
                     // Cursor Up            <ESC>[{COUNT}A
                     row = -(Math.Max(1, _csiparams[0]));
-                    _terminal.MoveRow(row, true);
+                    await _terminal.MoveRow(row, true);
                     break;
 
                 case 'B':
                     // Cursor Down          <ESC>[{COUNT}B
                     row = (Math.Max(1, _csiparams[0]));
-                    _terminal.MoveRow(row, true);
+                    await _terminal.MoveRow(row, true);
                     break;
 
                 case 'C':
                     // Cursor Forward       <ESC>[{COUNT}C
                     col = (Math.Max(1, _csiparams[0]));
-                    _terminal.MoveCol(col, true);
+                    await _terminal.MoveCol(col, true);
                     break;
 
                 case 'D':
                     // Cursor Backward      <ESC>[{COUNT}D
                     col = -(Math.Max(1, _csiparams[0]));
-                    _terminal.MoveCol(col, true);
+                    await _terminal.MoveCol(col, true);
                     break;
 
                 case 'f':
@@ -238,32 +238,41 @@ namespace Towser
                     // Cursor Home          <ESC>[{ROW};{COLUMN}H
                     row = Math.Max(0, _csiparams[0] - 1);
                     col = Math.Max(0, _csiparams[1] - 1);
-                    _terminal.Move(row, col);
+                    await _terminal.Move(row, col);
                     break;
 
                 case 'K':
                     // Erase in line
-                    _terminal.Clear(TerminalClearType.EndOfLine);
+                    await _terminal.Clear(TerminalClearType.EndOfLine);
                     break;
 
                 case 'J':
                     switch (_csiparams[0])
                     {
                         case 0:
-                            _terminal.Clear(TerminalClearType.BottomOfScreen);
+                            await _terminal.Clear(TerminalClearType.BottomOfScreen);
                             break;
                         case 2:
-                            _terminal.Clear(TerminalClearType.FullScreen);
-                            _terminal.Move(0, 0);
+                            await _terminal.Clear(TerminalClearType.FullScreen);
+                            await _terminal.Move(0, 0);
                             break;
                     }
                     break;
 
                 case 'm':
                     // SGR - Select Graphic Rendition
-                    for (var i = 0; i <= _csiix; i++)
+                    if (_csiix == 0)
                     {
-                        _terminal.Attr((TerminalAttributes)_csiparams[i]);
+                        await _terminal.Attr((TerminalAttributes)_csiparams[0]);
+                    }
+                    else
+                    {
+                        var attrs = new TerminalAttributes[_csiix + 1];
+                        for (var i = 0; i <= _csiix; i++)
+                        {
+                            attrs[i] = (TerminalAttributes)_csiparams[i];
+                        }
+                        await _terminal.Attrs(attrs);
                     }
                     break;
 

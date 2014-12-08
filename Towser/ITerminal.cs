@@ -8,13 +8,14 @@ namespace Towser
 {
     public interface ITerminal
     {
-        void Write(string s);
-        void Error(string s);
-        void Clear(TerminalClearType type);
-        void Move(int row, int col);
-        void MoveRow(int row, bool relativeRow);
-        void MoveCol(int col, bool relativeCol);
-        void Attr(TerminalAttributes attr);
+        Task Write(string s);
+        Task Error(string s);
+        Task Clear(TerminalClearType type);
+        Task Move(int row, int col);
+        Task MoveRow(int row, bool relativeRow);
+        Task MoveCol(int col, bool relativeCol);
+        Task Attr(TerminalAttributes attr);
+        Task Attrs(TerminalAttributes[] attrs);
     }
 
     public enum TerminalClearType

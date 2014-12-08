@@ -11,7 +11,7 @@ namespace Towser
 
         protected override async Task OnConnected(IRequest request, string connectionId)
         {
-            Action<string> writeToTerminal = (s) => Connection.Send(connectionId, s);
+            Func<string, Task> writeToTerminal = (s) => Connection.Send(connectionId, s);
             var decoder = new TermDecoder(writeToTerminal);
             await _tcm.Init(connectionId, decoder);
             HostingEnvironment.QueueBackgroundWorkItem((ct) => _tcm.ReadLoop(connectionId, decoder));
