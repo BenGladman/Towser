@@ -35,7 +35,7 @@ namespace Towser
         /// </summary>
         public Func<string, Task<string>> ScriptFunc { private get; set; }
 
-        private const int _bufferSize = 1024;
+        private const int _bufferSize = 4096;
 
         private byte[] _outBytes = new byte[_bufferSize];
 
@@ -62,7 +62,7 @@ namespace Towser
             }
         }
 
-        public virtual async Task AddByte(byte b)
+        public virtual Task AddByte(byte b)
         {
             if (b == 0x0e)
             {
@@ -81,11 +81,13 @@ namespace Towser
                 // append byte to output
                 _outBytes[_bytelen] = b;
                 _bytelen += 1;
-                if (_bytelen > _bufferSize) { await Flush(); }
+                if (_bytelen >= _bufferSize) { AppendBytesToSb(); }
             }
+
+            return Task.FromResult(true);
         }
 
-        public async Task Flush()
+        public async Task<string> GetDecodedString()
         {
             AppendBytesToSb();
 
@@ -94,10 +96,13 @@ namespace Towser
 
             if (str.Length > 0 && ScriptFunc != null) { str = await ScriptFunc(str); }
 
-            if (str.Length > 0)
-            {
-                await _writeToTerminal(str);
-            }
+            return str;
+        }
+
+        public virtual async Task Flush()
+        {
+            var str = await GetDecodedString();
+            if (str.Length > 0) { await _writeToTerminal(str); }
         }
     }
 }

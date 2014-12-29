@@ -103,7 +103,7 @@ namespace Towser
                     return str;
                 };
 
-            const int bufferSize = 1024;
+            const int bufferSize = 4096;
 
             while (client.IsConnected)
             {

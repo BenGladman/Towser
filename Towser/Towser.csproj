@@ -108,6 +108,7 @@
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DecodedFragment.cs" />
     <Compile Include="TelnetClientManager.cs" />
     <Compile Include="ITerminal.cs" />
     <Compile Include="TelnetStreamWriter.cs" />

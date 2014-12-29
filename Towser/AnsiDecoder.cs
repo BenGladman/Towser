@@ -13,12 +13,14 @@ namespace Towser
         private readonly ITerminal _terminal;
 
         public AnsiDecoder(ITerminal terminal)
-            : base(terminal.Write)
+            : base(null)
         {
             _terminal = terminal;
         }
 
         private EscapeState _escapeState = EscapeState.Normal;
+
+        private List<DecodedFragment> _fragments = new List<DecodedFragment>();
 
         private char _c1control = '\0';
         private StringBuilder _c1param = new StringBuilder();
@@ -124,7 +126,7 @@ namespace Towser
                         // Add digit to numeric parameter
                         var p = _csiparams[_csiix];
                         p *= 10;
-                        p += (ch - '0');
+                        p += (byte)(ch - '0');
                         _csiparams[_csiix] = p;
                     }
                     else
@@ -180,18 +182,18 @@ namespace Towser
         {
             if (_c1control != '\0')
             {
-                await Flush();
-                await ExecC1();
+                await AddTextFragment();
+                ExecC1();
             }
             _escapeState = EscapeState.Normal;
         }
 
-        private async Task ExecC1()
+        private void ExecC1()
         {
             switch (_c1control)
             {
                 case '[':
-                    await ExecCsi();
+                    ExecCsi();
                     break;
 
                 case ']':
@@ -203,7 +205,7 @@ namespace Towser
             }
         }
 
-        private async Task ExecCsi()
+        private void ExecCsi()
         {
             int col, row;
 
@@ -212,25 +214,25 @@ namespace Towser
                 case 'A':
                     // Cursor Up            <ESC>[{COUNT}A
                     row = -(Math.Max(1, _csiparams[0]));
-                    await _terminal.MoveRow(row, true);
+                    _fragments.Add(new DecodedFragment(DecodedFragment.MoveMode.RowRelative, row, 0));
                     break;
 
                 case 'B':
                     // Cursor Down          <ESC>[{COUNT}B
                     row = (Math.Max(1, _csiparams[0]));
-                    await _terminal.MoveRow(row, true);
+                    _fragments.Add(new DecodedFragment(DecodedFragment.MoveMode.RowRelative, row, 0));
                     break;
 
                 case 'C':
                     // Cursor Forward       <ESC>[{COUNT}C
                     col = (Math.Max(1, _csiparams[0]));
-                    await _terminal.MoveCol(col, true);
+                    _fragments.Add(new DecodedFragment(DecodedFragment.MoveMode.ColRelative, 0, col));
                     break;
 
                 case 'D':
                     // Cursor Backward      <ESC>[{COUNT}D
                     col = -(Math.Max(1, _csiparams[0]));
-                    await _terminal.MoveCol(col, true);
+                    _fragments.Add(new DecodedFragment(DecodedFragment.MoveMode.ColRelative, 0, col));
                     break;
 
                 case 'f':
@@ -238,44 +240,53 @@ namespace Towser
                     // Cursor Home          <ESC>[{ROW};{COLUMN}H
                     row = Math.Max(0, _csiparams[0] - 1);
                     col = Math.Max(0, _csiparams[1] - 1);
-                    await _terminal.Move(row, col);
+                    _fragments.Add(new DecodedFragment(DecodedFragment.MoveMode.RowAndCol, row, col));
                     break;
 
                 case 'K':
                     // Erase in line
-                    await _terminal.Clear(TerminalClearType.EndOfLine);
+                    _fragments.Add(new DecodedFragment(DecodedFragment.ClearMode.EndOfLine));
                     break;
 
                 case 'J':
                     switch (_csiparams[0])
                     {
                         case 0:
-                            await _terminal.Clear(TerminalClearType.BottomOfScreen);
+                            _fragments.Add(new DecodedFragment(DecodedFragment.ClearMode.BottomOfScreen));
                             break;
                         case 2:
-                            await _terminal.Clear(TerminalClearType.FullScreen);
-                            await _terminal.Move(0, 0);
+                            _fragments.Add(new DecodedFragment(DecodedFragment.ClearMode.FullScreen));
+                            _fragments.Add(new DecodedFragment(DecodedFragment.MoveMode.RowAndCol, 0, 0));
                             break;
                     }
                     break;
 
                 case 'm':
                     // SGR - Select Graphic Rendition
-                    if (_csiix == 0)
+                    var attrs = new DecodedFragment.Attr[_csiix + 1];
+                    for (var i = 0; i <= _csiix; i++)
                     {
-                        await _terminal.Attr((TerminalAttributes)_csiparams[0]);
+                        attrs[i] = (DecodedFragment.Attr)_csiparams[i];
                     }
-                    else
-                    {
-                        var attrs = new TerminalAttributes[_csiix + 1];
-                        for (var i = 0; i <= _csiix; i++)
-                        {
-                            attrs[i] = (TerminalAttributes)_csiparams[i];
-                        }
-                        await _terminal.Attrs(attrs);
-                    }
+                    _fragments.Add(new DecodedFragment(attrs));
                     break;
 
+            }
+        }
+
+        private async Task AddTextFragment()
+        {
+            var str = await GetDecodedString();
+            if (str.Length > 0) { _fragments.Add(new DecodedFragment(str)); }
+        }
+
+        public override async Task Flush()
+        {
+            await AddTextFragment();
+            if (_fragments.Count > 0)
+            {
+                await _terminal.Write(_fragments);
+                _fragments.Clear();
             }
         }
 

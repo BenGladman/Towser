@@ -15,41 +15,40 @@
         }
     };
 
-    var hub = $.connection.towserHub;
-
-    // receive from signalR
-    hub.client.write = function (data) {
-        vt100.addstr(data);
-        refresh();
-    };
-
-    hub.client.clear = function (type) {
-        switch (type) {
-            case 0: vt100.clear(); break;
-            case 1: vt100.clrtoeol(); break;
-            case 2: vt100.clrtobot(); break;
+    var move = function (movemode, moverow, movecol) {
+        switch (movemode) {
+            case 1:
+                // row and col
+                vt100.move(moverow, movecol);
+                break;
+            case 2:
+                // row
+                vt100.move(moverow, vt100.col_);
+                break;
+            case 3:
+                // relative row
+                vt100.move(moverow + vt100.row_, vt100.col_);
+                break;
+            case 4:
+                // col
+                vt100.move(vt100.row_, movecol);
+                break;
+            case 5:
+                // relative col
+                vt100.move(vt100.row_, movecol + vt100.col_);
+                break;
         }
-        refresh();
     };
 
-    hub.client.move = function (row, col) {
-        vt100.move(row, col);
-        refresh();
+    var clear = function (clearmode) {
+        switch (clearmode) {
+            case 1: vt100.clear(); break;
+            case 2: vt100.clrtoeol(); break;
+            case 3: vt100.clrtobot(); break;
+        }
     };
 
-    hub.client.moveRow = function (row, relativeRow) {
-        if (relativeRow) { row += vt100.row_; }
-        vt100.move(row, vt100.col_);
-        refresh();
-    };
-
-    hub.client.moveCol = function (col, relativeCol) {
-        if (relativeCol) { col += vt100.col_; }
-        vt100.move(vt100.row_, col);
-        refresh();
-    };
-
-    hub.client.attr = function (attr) {
+    var setAttr = function (attr) {
         switch (attr) {
             case 0:
                 vt100.standend();
@@ -144,12 +143,25 @@
                 vt100.bgset(vt100.bkgd_.bg);
                 break;
         }
-        refresh();
     };
 
-    hub.client.attrs = function (attrs) {
-        attrs.forEach(hub.client.attr);
+    var setAttrs = function (attrs) {
+        attrs.forEach(setAttr);
     };
+
+    var processFragment = function (fragment) {
+        if (fragment.t) { vt100.addstr(fragment.t); }
+        move(fragment.m, fragment.mr || 0, fragment.mc || 0);
+        clear(fragment.c);
+        if (fragment.a) { setAttrs(fragment.a); }
+    };
+
+    var hub = $.connection.towserHub;
+
+    hub.client.write = function (data) {
+        data.forEach(processFragment);
+        refresh();
+    }
 
     $.connection.hub.start()
         .done(function(){ console.log('Now connected, connection ID=' + $.connection.hub.id); })
