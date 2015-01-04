@@ -1,18 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Web;
 using Newtonsoft.Json;
 
 namespace Towser
 {
-    public struct DecodedFragment
+    public struct AnsiFragment
     {
         [JsonProperty("t", NullValueHandling = NullValueHandling.Ignore)]
         public readonly string Text;
 
         [JsonProperty("m", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public readonly MoveMode MoveModeP;
+        public readonly MoveMode Move;
 
         [JsonProperty("mc", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public readonly sbyte MoveCol;
@@ -21,31 +19,31 @@ namespace Towser
         public readonly sbyte MoveRow;
 
         [JsonProperty("c", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public readonly ClearMode ClearModeP;
+        public readonly ClearMode Clear;
 
         [JsonProperty("a", NullValueHandling = NullValueHandling.Ignore)]
-        public readonly Attr[] AttrsP;
+        public readonly Attr[] Attrs;
 
-        public DecodedFragment(string str) : this()
+        public AnsiFragment(string str) : this()
         {
             Text = str;
         }
 
-        public DecodedFragment(MoveMode m, int row, int col) : this()
+        public AnsiFragment(MoveMode m, int row, int col) : this()
         {
-            MoveModeP = m;
+            Move = m;
             MoveRow = (sbyte)row;
             MoveCol = (sbyte)col;
         }
 
-        public DecodedFragment(ClearMode c) : this()
+        public AnsiFragment(ClearMode c) : this()
         {
-            ClearModeP = c;
+            Clear = c;
         }
 
-        public DecodedFragment(Attr[] a) : this()
+        public AnsiFragment(IEnumerable<Attr> a) : this()
         {
-            AttrsP = a;
+            Attrs = a.ToArray();
         }
 
         public enum MoveMode : byte

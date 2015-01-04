@@ -8,7 +8,7 @@ namespace Towser
 {
     public interface ITerminal
     {
-        Task Write(List<DecodedFragment> fragments);
+        Task Write(IEnumerable<AnsiFragment> fragments);
         Task Error(string s);
     }
 }
