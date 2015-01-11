@@ -10,7 +10,8 @@ namespace Towser
         private readonly ImmutableList<int> _csiParams;
         private readonly int _currentCsiParam;
 
-        public AnsiEscapeCode(char initialChar) : this()
+        public AnsiEscapeCode(char initialChar)
+            : this()
         {
             _initialChar = initialChar;
         }
@@ -75,15 +76,24 @@ namespace Towser
 
             switch (_initialChar)
             {
+                case 'P':
+                    fragments = fragments.Add(new AnsiFragment(AnsiFragment.StringCommand.Dcs, _intermediateChars));
+                    break;
+
                 case '[':
                     fragments = fragments.AddRange(CsiAnsiFragments());
                     break;
 
                 case ']':
+                    fragments = fragments.Add(new AnsiFragment(AnsiFragment.StringCommand.Osc, _intermediateChars));
+                    break;
+
                 case '^':
+                    fragments = fragments.Add(new AnsiFragment(AnsiFragment.StringCommand.Pm, _intermediateChars));
+                    break;
+
                 case '_':
-                    // OSC, PM, APC - not implemented
-                    //var stringparam = _c1param.ToString();
+                    fragments = fragments.Add(new AnsiFragment(AnsiFragment.StringCommand.Apc, _intermediateChars));
                     break;
             }
 
@@ -154,10 +164,10 @@ namespace Towser
                 case 'm':
                     // SGR - Select Graphic Rendition
                     var count = _csiParams.Count;
-                    var attrs = new AnsiFragment.Attr[count];
+                    var attrs = new AnsiFragment.Sgr[count];
                     for (var i = 0; i < count; i++)
                     {
-                        attrs[i] = (AnsiFragment.Attr)_csiParams[i];
+                        attrs[i] = (AnsiFragment.Sgr)_csiParams[i];
                     }
                     fragments = fragments.Add(new AnsiFragment(attrs));
                     break;

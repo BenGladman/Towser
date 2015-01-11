@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
 
@@ -21,29 +22,71 @@ namespace Towser
         [JsonProperty("c", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public readonly ClearMode Clear;
 
-        [JsonProperty("a", NullValueHandling = NullValueHandling.Ignore)]
-        public readonly Attr[] Attrs;
+        /// <summary>Select Graphic Rendition</summary>
+        [JsonProperty("sgr", NullValueHandling = NullValueHandling.Ignore)]
+        public readonly Sgr[] Sgrs;
 
-        public AnsiFragment(string str) : this()
+        /// <summary>Device Control String</summary>
+        [JsonProperty("dcs", NullValueHandling = NullValueHandling.Ignore)]
+        public readonly String Dcs;
+
+        /// <summary>Operating System Command</summary>
+        [JsonProperty("osc", NullValueHandling = NullValueHandling.Ignore)]
+        public readonly String Osc;
+
+        /// <summary>Privacy Message</summary>
+        [JsonProperty("pm", NullValueHandling = NullValueHandling.Ignore)]
+        public readonly String Pm;
+
+        /// <summary>Application Program Control</summary>
+        [JsonProperty("apc", NullValueHandling = NullValueHandling.Ignore)]
+        public readonly String Apc;
+
+        public AnsiFragment(string str)
+            : this()
         {
             Text = str;
         }
 
-        public AnsiFragment(MoveMode m, int row, int col) : this()
+        public AnsiFragment(MoveMode m, int row, int col)
+            : this()
         {
             Move = m;
             MoveRow = (sbyte)row;
             MoveCol = (sbyte)col;
         }
 
-        public AnsiFragment(ClearMode c) : this()
+        public AnsiFragment(ClearMode c)
+            : this()
         {
             Clear = c;
         }
 
-        public AnsiFragment(IEnumerable<Attr> a) : this()
+        public AnsiFragment(IEnumerable<Sgr> a)
+            : this()
         {
-            Attrs = a.ToArray();
+            Sgrs = a.ToArray();
+        }
+
+        public AnsiFragment(StringCommand s, IEnumerable<char> chars)
+            : this()
+        {
+            var str = String.Concat(chars);
+            switch (s)
+            {
+                case StringCommand.Dcs:
+                    Dcs = str;
+                    break;
+                case StringCommand.Osc:
+                    Osc = str;
+                    break;
+                case StringCommand.Pm:
+                    Pm = str;
+                    break;
+                case StringCommand.Apc:
+                    Apc = str;
+                    break;
+            }
         }
 
         public enum MoveMode : byte
@@ -67,7 +110,7 @@ namespace Towser
         /// <summary>
         /// Ansi SGR (Select Graphic Rendition) parameters
         /// </summary>
-        public enum Attr : byte
+        public enum Sgr : byte
         {
             Reset = 0,
             Bold = 1,
@@ -102,6 +145,19 @@ namespace Towser
             BgCyan = 46,
             BgWhite = 47,
             BgDefault = 49,
+        }
+
+        public enum StringCommand : byte
+        {
+            No = 0,
+            /// <summary>Device Control String</summary>
+            Dcs = 1,
+            /// <summary>Operating System Command</summary>
+            Osc = 2,
+            /// <summary>Privacy Message</summary>
+            Pm = 3,
+            /// <summary>Application Program Control</summary>
+            Apc = 4,
         }
     }
 }

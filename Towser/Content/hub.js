@@ -48,8 +48,8 @@
         }
     };
 
-    var setAttr = function (attr) {
-        switch (attr) {
+    var setSgr = function (sgr) {
+        switch (sgr) {
             case 0:
                 vt100.standend();
                 vt100.fgset(vt100.bkgd_.fg);
@@ -145,15 +145,15 @@
         }
     };
 
-    var setAttrs = function (attrs) {
-        attrs.forEach(setAttr);
+    var setSgrs = function (sgrs) {
+        sgrs.forEach(setSgr);
     };
 
     var processFragment = function (fragment) {
         if (fragment.t) { vt100.addstr(fragment.t); }
         move(fragment.m, fragment.mr || 0, fragment.mc || 0);
         clear(fragment.c);
-        if (fragment.a) { setAttrs(fragment.a); }
+        if (fragment.sgr) { setSgrs(fragment.sgr); }
     };
 
     var hub = $.connection.towserHub;

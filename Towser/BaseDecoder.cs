@@ -5,17 +5,10 @@ using System.Threading.Tasks;
 namespace Towser
 {
     /// <summary>
-    /// Decodes the bytes received from the server into strings and writes the strings to the terminal.
+    /// Decodes the bytes received from the server.
     /// </summary>
-    public class TermDecoder
+    public abstract class BaseDecoder
     {
-        private readonly Func<string, Task> _writeToTerminal;
-
-        public TermDecoder(Func<string, Task> writeToTerminal)
-        {
-            _writeToTerminal = writeToTerminal;
-        }
-
         private Decoder _standardDecoder;
         private Decoder _altDecoder;
         private Decoder _activeDecoder;
@@ -99,10 +92,6 @@ namespace Towser
             return str;
         }
 
-        public virtual async Task Flush()
-        {
-            var str = await GetDecodedString();
-            if (str.Length > 0) { await _writeToTerminal(str); }
-        }
+        public abstract Task Flush();
     }
 }

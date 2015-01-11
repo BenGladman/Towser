@@ -114,15 +114,16 @@
     <Compile Include="AnsiEscapeCode.cs" />
     <Compile Include="AnsiFragment.cs" />
     <Compile Include="TelnetClientManager.cs" />
-    <Compile Include="ITerminal.cs" />
+    <Compile Include="IAnsiTerminal.cs" />
     <Compile Include="TelnetStreamWriter.cs" />
     <Compile Include="TowserPersistentConnection.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Startup.cs" />
     <Compile Include="TelnetClient.cs" />
     <Compile Include="TowserHub.cs" />
-    <Compile Include="TermDecoder.cs" />
+    <Compile Include="BaseDecoder.cs" />
     <Compile Include="AnsiDecoder.cs" />
+    <Compile Include="VanillaDecoder.cs" />
   </ItemGroup>
   <ItemGroup />
   <PropertyGroup>

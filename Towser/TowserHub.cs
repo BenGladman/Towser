@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Towser
 {
-    public class TowserHub : Hub<ITerminal>
+    public class TowserHub : Hub<IAnsiTerminal>
     {
         private static TelnetClientManager _tcm = new TelnetClientManager();
 

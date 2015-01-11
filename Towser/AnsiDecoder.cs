@@ -1,19 +1,16 @@
-﻿using System;
-using System.Collections.Immutable;
-using System.Diagnostics;
-using System.Linq;
-using System.Web;
+﻿using System.Collections.Immutable;
 using System.Threading.Tasks;
-using System.Text;
 
 namespace Towser
 {
-    public class AnsiDecoder : TermDecoder
+    /// <summary>
+    /// Decodes the bytes received from the server into ANSI fragments and sends to the terminal.
+    /// </summary>
+    public class AnsiDecoder : BaseDecoder
     {
-        private readonly ITerminal _terminal;
+        private readonly IAnsiTerminal _terminal;
 
-        public AnsiDecoder(ITerminal terminal)
-            : base(null)
+        public AnsiDecoder(IAnsiTerminal terminal)
         {
             _terminal = terminal;
         }

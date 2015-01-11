@@ -53,7 +53,7 @@ namespace Towser
         /// <summary>
         /// Initialise a new telnet connection based on the web config.
         /// </summary>
-        public async Task Init(string connectionId, TermDecoder decoder)
+        public async Task Init(string connectionId, BaseDecoder decoder)
         {
             var server = WebConfigurationManager.AppSettings["server"];
             var port = Int32.Parse(WebConfigurationManager.AppSettings["port"]);
@@ -69,7 +69,7 @@ namespace Towser
         /// <summary>
         /// Wait for data from the telnet server and send it to the emulation.
         /// </summary>
-        public async Task ReadLoop(string connectionId, TermDecoder decoder)
+        public async Task ReadLoop(string connectionId, BaseDecoder decoder)
         {
             var client = Get(connectionId);
             if (client == null) { return; }
