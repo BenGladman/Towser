@@ -6,14 +6,14 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Linq;
 
-namespace Towser
+namespace Towser.Telnet
 {
-    public class TelnetStreamWriter
+    public class StreamWriter
     {
         private readonly NetworkStream _stream;
         private readonly Encoding _encoding;
 
-        public TelnetStreamWriter(NetworkStream stream, string encodingName)
+        public StreamWriter(NetworkStream stream, string encodingName)
         {
             _stream = stream;
             _encoding = Encoding.GetEncoding(encodingName);

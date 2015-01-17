@@ -3,16 +3,19 @@ using System;
 using System.Threading.Tasks;
 using System.Web.Hosting;
 
-namespace Towser
+namespace Towser.Vanilla
 {
-    public class TowserPersistentConnection : PersistentConnection
+    /// <summary>
+    /// Manages comms between Telnet Server and SignalR Persistent Connection clients with minimal processing.
+    /// </summary>
+    public class VanillaConnection : PersistentConnection
     {
-        private static TelnetClientManager _tcm = new TelnetClientManager();
+        private static Telnet.ClientManager _tcm = new Telnet.ClientManager();
 
         protected override async Task OnConnected(IRequest request, string connectionId)
         {
             Func<string, Task> writeToTerminal = (s) => Connection.Send(connectionId, s);
-            var decoder = new VanillaDecoder(writeToTerminal);
+            var decoder = new Decoder(writeToTerminal);
             await _tcm.Init(connectionId, decoder);
             HostingEnvironment.QueueBackgroundWorkItem((ct) => _tcm.ReadLoop(connectionId, decoder));
         }

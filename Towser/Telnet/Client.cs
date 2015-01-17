@@ -6,9 +6,9 @@ using System.Linq;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 
-namespace Towser
+namespace Towser.Telnet
 {
-    class TelnetClient
+    class Client
     {
         enum Verbs : byte
         {
@@ -35,19 +35,19 @@ namespace Towser
             EnvironmentVariables = 36
         }
 
-        private readonly TcpClient _client = new TcpClient();
+        private readonly TcpClient _tcpclient = new TcpClient();
         private string _termtype;
         private NetworkStream _stream;
 
-        public TelnetStreamWriter StreamWriter { get; private set; }
+        public StreamWriter StreamWriter { get; private set; }
 
         public async Task ConnectAsync(string hostname, int port, string termtype, string encodingName)
         {
             if (IsConnected) { return; }
             _termtype = termtype;
-            await _client.ConnectAsync(hostname, port);
-            _stream = _client.GetStream();
-            StreamWriter = new TelnetStreamWriter(_stream, encodingName);
+            await _tcpclient.ConnectAsync(hostname, port);
+            _stream = _tcpclient.GetStream();
+            StreamWriter = new StreamWriter(_stream, encodingName);
         }
 
         public void Disconnect()
@@ -55,7 +55,7 @@ namespace Towser
             if (IsConnected)
             {
                 _stream.Close();
-                _client.Close();
+                _tcpclient.Close();
             }
         }
 
@@ -85,7 +85,7 @@ namespace Towser
 
         public bool IsConnected
         {
-            get { return _client.Connected && _stream != null; }
+            get { return _tcpclient.Connected && _stream != null; }
         }
 
         /// <summary>

@@ -103,27 +103,27 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Content\hub.js" />
+    <Content Include="Scripts\aesop.js" />
     <Content Include="Scripts\jquery.signalR-2.1.2.js" />
     <Content Include="Scripts\jquery.signalR-2.1.2.min.js" />
-    <Content Include="Content\persistentConnection.js" />
-    <Content Include="Content\VT100.js" />
+    <Content Include="Scripts\vanilla.js" />
+    <Content Include="Scripts\VT100.js" />
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AnsiEscapeCode.cs" />
-    <Compile Include="AnsiFragment.cs" />
-    <Compile Include="TelnetClientManager.cs" />
-    <Compile Include="IAnsiTerminal.cs" />
-    <Compile Include="TelnetStreamWriter.cs" />
-    <Compile Include="TowserPersistentConnection.cs" />
+    <Compile Include="Aesop\EscapeCode.cs" />
+    <Compile Include="Aesop\Fragment.cs" />
+    <Compile Include="Telnet\ClientManager.cs" />
+    <Compile Include="Aesop\ITerminal.cs" />
+    <Compile Include="Telnet\StreamWriter.cs" />
+    <Compile Include="Vanilla\VanillaConnection.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Startup.cs" />
-    <Compile Include="TelnetClient.cs" />
-    <Compile Include="TowserHub.cs" />
+    <Compile Include="Telnet\Client.cs" />
+    <Compile Include="Aesop\AesopHub.cs" />
     <Compile Include="BaseDecoder.cs" />
-    <Compile Include="AnsiDecoder.cs" />
-    <Compile Include="VanillaDecoder.cs" />
+    <Compile Include="Aesop\Decoder.cs" />
+    <Compile Include="Vanilla\Decoder.cs" />
   </ItemGroup>
   <ItemGroup />
   <PropertyGroup>

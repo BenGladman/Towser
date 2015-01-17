@@ -2,16 +2,19 @@
 using Microsoft.AspNet.SignalR;
 using System.Threading.Tasks;
 
-namespace Towser
+namespace Towser.Aesop
 {
-    public class TowserHub : Hub<IAnsiTerminal>
+    /// <summary>
+    /// Manages comms between Telnet server and SignalR hub clients which understand <see cref="AesopFragment"/>s.
+    /// </summary>
+    public class AesopHub : Hub<ITerminal>
     {
-        private static TelnetClientManager _tcm = new TelnetClientManager();
+        private static Telnet.ClientManager _tcm = new Telnet.ClientManager();
 
         public override async Task OnConnected()
         {
             var connectionId = Context.ConnectionId;
-            var decoder = new AnsiDecoder(Clients.Caller);
+            var decoder = new Decoder(Clients.Caller);
             await _tcm.Init(connectionId, decoder);
             HostingEnvironment.QueueBackgroundWorkItem((ct) => _tcm.ReadLoop(connectionId, decoder));
         }

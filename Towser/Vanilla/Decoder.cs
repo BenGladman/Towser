@@ -2,16 +2,16 @@
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Towser
+namespace Towser.Vanilla
 {
     /// <summary>
     /// Decodes the bytes received from the server into strings and writes the strings to the terminal.
     /// </summary>
-    public class VanillaDecoder : BaseDecoder
+    public class Decoder : BaseDecoder
     {
         private readonly Func<string, Task> _writeToTerminal;
 
-        public VanillaDecoder(Func<string, Task> writeToTerminal)
+        public Decoder(Func<string, Task> writeToTerminal)
         {
             _writeToTerminal = writeToTerminal;
         }

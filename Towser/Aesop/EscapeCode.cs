@@ -1,8 +1,11 @@
 ﻿using System.Collections.Immutable;
 
-namespace Towser
+namespace Towser.Aesop
 {
-    public struct AnsiEscapeCode
+    /// <summary>
+    /// Represents an ANSI Escape Code.
+    /// </summary>
+    public struct EscapeCode
     {
         private readonly char _initialChar;
         private readonly ImmutableList<char> _intermediateChars;
@@ -10,13 +13,13 @@ namespace Towser
         private readonly ImmutableList<int> _csiParams;
         private readonly int _currentCsiParam;
 
-        public AnsiEscapeCode(char initialChar)
+        public EscapeCode(char initialChar)
             : this()
         {
             _initialChar = initialChar;
         }
 
-        private AnsiEscapeCode(AnsiEscapeCode source,
+        private EscapeCode(EscapeCode source,
             char setInitialChar,
             char addIntermediateChar,
             char setFinalChar,
@@ -58,42 +61,42 @@ namespace Towser
         /// <summary>
         /// Return a new immutable escape code based on this one.
         /// </summary>
-        public AnsiEscapeCode With(
+        public EscapeCode With(
             char setInitialChar = '\0',
             char addIntermediateChar = '\0',
             char setFinalChar = '\0',
             char addCsiParam = '\0')
         {
-            return new AnsiEscapeCode(this, setInitialChar, addIntermediateChar, setFinalChar, addCsiParam);
+            return new EscapeCode(this, setInitialChar, addIntermediateChar, setFinalChar, addCsiParam);
         }
 
         /// <summary>
         /// Return the fragments from this escape code.
         /// </summary>
-        public ImmutableList<AnsiFragment> AnsiFragments()
+        public ImmutableList<Fragment> Fragments()
         {
-            var fragments = ImmutableList<AnsiFragment>.Empty;
+            var fragments = ImmutableList<Fragment>.Empty;
 
             switch (_initialChar)
             {
                 case 'P':
-                    fragments = fragments.Add(new AnsiFragment(AnsiFragment.StringCommand.Dcs, _intermediateChars));
+                    fragments = fragments.Add(new Fragment(Fragment.StringCommand.Dcs, _intermediateChars));
                     break;
 
                 case '[':
-                    fragments = fragments.AddRange(CsiAnsiFragments());
+                    fragments = fragments.AddRange(CsiFragments());
                     break;
 
                 case ']':
-                    fragments = fragments.Add(new AnsiFragment(AnsiFragment.StringCommand.Osc, _intermediateChars));
+                    fragments = fragments.Add(new Fragment(Fragment.StringCommand.Osc, _intermediateChars));
                     break;
 
                 case '^':
-                    fragments = fragments.Add(new AnsiFragment(AnsiFragment.StringCommand.Pm, _intermediateChars));
+                    fragments = fragments.Add(new Fragment(Fragment.StringCommand.Pm, _intermediateChars));
                     break;
 
                 case '_':
-                    fragments = fragments.Add(new AnsiFragment(AnsiFragment.StringCommand.Apc, _intermediateChars));
+                    fragments = fragments.Add(new Fragment(Fragment.StringCommand.Apc, _intermediateChars));
                     break;
             }
 
@@ -103,9 +106,9 @@ namespace Towser
         /// <summary>
         /// Return the fragments if this is a CSI escape code.
         /// </summary>
-        public ImmutableList<AnsiFragment> CsiAnsiFragments()
+        public ImmutableList<Fragment> CsiFragments()
         {
-            var fragments = ImmutableList<AnsiFragment>.Empty;
+            var fragments = ImmutableList<Fragment>.Empty;
 
             int col, row;
 
@@ -114,25 +117,25 @@ namespace Towser
                 case 'A':
                     // Cursor Up            <ESC>[{COUNT}A
                     row = -(CsiParam(0, 1));
-                    fragments = fragments.Add(new AnsiFragment(AnsiFragment.MoveMode.RowRelative, row, 0));
+                    fragments = fragments.Add(new Fragment(Fragment.MoveMode.RowRelative, row, 0));
                     break;
 
                 case 'B':
                     // Cursor Down          <ESC>[{COUNT}B
                     row = (CsiParam(0, 1));
-                    fragments = fragments.Add(new AnsiFragment(AnsiFragment.MoveMode.RowRelative, row, 0));
+                    fragments = fragments.Add(new Fragment(Fragment.MoveMode.RowRelative, row, 0));
                     break;
 
                 case 'C':
                     // Cursor Forward       <ESC>[{COUNT}C
                     col = (CsiParam(0, 1));
-                    fragments = fragments.Add(new AnsiFragment(AnsiFragment.MoveMode.ColRelative, 0, col));
+                    fragments = fragments.Add(new Fragment(Fragment.MoveMode.ColRelative, 0, col));
                     break;
 
                 case 'D':
                     // Cursor Backward      <ESC>[{COUNT}D
                     col = -(CsiParam(0, 1));
-                    fragments = fragments.Add(new AnsiFragment(AnsiFragment.MoveMode.ColRelative, 0, col));
+                    fragments = fragments.Add(new Fragment(Fragment.MoveMode.ColRelative, 0, col));
                     break;
 
                 case 'f':
@@ -140,23 +143,23 @@ namespace Towser
                     // Cursor Home          <ESC>[{ROW};{COLUMN}H
                     row = CsiParam(0, 1) - 1;
                     col = CsiParam(1, 1) - 1;
-                    fragments = fragments.Add(new AnsiFragment(AnsiFragment.MoveMode.RowAndCol, row, col));
+                    fragments = fragments.Add(new Fragment(Fragment.MoveMode.RowAndCol, row, col));
                     break;
 
                 case 'K':
                     // Erase in line
-                    fragments = fragments.Add(new AnsiFragment(AnsiFragment.ClearMode.EndOfLine));
+                    fragments = fragments.Add(new Fragment(Fragment.ClearMode.EndOfLine));
                     break;
 
                 case 'J':
                     switch (CsiParam(0))
                     {
                         case 0:
-                            fragments = fragments.Add(new AnsiFragment(AnsiFragment.ClearMode.BottomOfScreen));
+                            fragments = fragments.Add(new Fragment(Fragment.ClearMode.BottomOfScreen));
                             break;
                         case 2:
-                            fragments = fragments.Add(new AnsiFragment(AnsiFragment.ClearMode.FullScreen));
-                            fragments = fragments.Add(new AnsiFragment(AnsiFragment.MoveMode.RowAndCol, 0, 0));
+                            fragments = fragments.Add(new Fragment(Fragment.ClearMode.FullScreen));
+                            fragments = fragments.Add(new Fragment(Fragment.MoveMode.RowAndCol, 0, 0));
                             break;
                     }
                     break;
@@ -164,12 +167,12 @@ namespace Towser
                 case 'm':
                     // SGR - Select Graphic Rendition
                     var count = _csiParams.Count;
-                    var attrs = new AnsiFragment.Sgr[count];
+                    var attrs = new Fragment.Sgr[count];
                     for (var i = 0; i < count; i++)
                     {
-                        attrs[i] = (AnsiFragment.Sgr)_csiParams[i];
+                        attrs[i] = (Fragment.Sgr)_csiParams[i];
                     }
-                    fragments = fragments.Add(new AnsiFragment(attrs));
+                    fragments = fragments.Add(new Fragment(attrs));
                     break;
 
             }

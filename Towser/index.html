@@ -6,17 +6,17 @@
     <title>Telnet client using WebSockets</title>
     <script src="Scripts/jquery-2.1.1.min.js"></script>
     <script src="Scripts/jquery.signalR-2.1.2.js"></script>
+    <script src="Scripts/VT100.js"></script>
+    <script src="Scripts/aesop.js"></script>
+    <script src="Scripts/vanilla.js"></script>
     <script src="signalr/hubs"></script>
-    <script src="Content/VT100.js"></script>
-    <script src="Content/hub.js"></script>
-    <script src="Content/persistentConnection.js"></script>
 </head>
 
 <body>
 
     <div id="buttons">
-        <button onclick="hubInit();">Init Hub</button>
-        <button onclick="persistentConnectionInit();">Init Persistent Connection</button>
+        <button onclick="aesopInit();">Init Aesop</button>
+        <button onclick="vanillaInit();">Init Vanilla</button>
     </div>
 
     <pre id="terminal"></pre>

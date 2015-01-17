@@ -3,15 +3,15 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Web.Configuration;
 
-namespace Towser
+namespace Towser.Telnet
 {
-    class TelnetClientManager
+    class ClientManager
     {
-        private Dictionary<string, TelnetClient> _clients = new Dictionary<string, TelnetClient>();
+        private Dictionary<string, Client> _clients = new Dictionary<string, Client>();
 
-        private async Task<TelnetClient> Connect(string connectionId, string server, int port, string termtype, string encodingName)
+        private async Task<Client> Connect(string connectionId, string server, int port, string termtype, string encodingName)
         {
-            var client = new TelnetClient();
+            var client = new Client();
             await client.ConnectAsync(server, port, termtype, encodingName);
             _clients[connectionId] = client;
             return client;
@@ -29,17 +29,17 @@ namespace Towser
         }
 
         /// <summary>
-        /// Returns the TelnetClient associated with the connectionId, or null.
+        /// Returns the <see cref="Client"/> associated with the connectionId, or null.
         /// </summary>
-        private TelnetClient Get(string connectionId)
+        private Client Get(string connectionId)
         {
-            TelnetClient client = null;
+            Client client = null;
             _clients.TryGetValue(connectionId, out client);
             return client;
         }
 
         /// <summary>
-        /// Write a string to the TelnetClient.
+        /// Write a string to the <see cref="Client"/>.
         /// </summary>
         public async Task Write(string connectionId, string data)
         {

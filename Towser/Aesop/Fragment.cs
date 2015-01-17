@@ -3,9 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
 
-namespace Towser
+namespace Towser.Aesop
 {
-    public struct AnsiFragment
+    /// <summary>
+    /// Represents a decoded ANSI escape code or plain text, which can be serialised to send to the terminal.
+    /// </summary>
+    public struct Fragment
     {
         [JsonProperty("t", NullValueHandling = NullValueHandling.Ignore)]
         public readonly string Text;
@@ -42,13 +45,13 @@ namespace Towser
         [JsonProperty("apc", NullValueHandling = NullValueHandling.Ignore)]
         public readonly String Apc;
 
-        public AnsiFragment(string str)
+        public Fragment(string str)
             : this()
         {
             Text = str;
         }
 
-        public AnsiFragment(MoveMode m, int row, int col)
+        public Fragment(MoveMode m, int row, int col)
             : this()
         {
             Move = m;
@@ -56,19 +59,19 @@ namespace Towser
             MoveCol = (sbyte)col;
         }
 
-        public AnsiFragment(ClearMode c)
+        public Fragment(ClearMode c)
             : this()
         {
             Clear = c;
         }
 
-        public AnsiFragment(IEnumerable<Sgr> a)
+        public Fragment(IEnumerable<Sgr> a)
             : this()
         {
             Sgrs = a.ToArray();
         }
 
-        public AnsiFragment(StringCommand s, IEnumerable<char> chars)
+        public Fragment(StringCommand s, IEnumerable<char> chars)
             : this()
         {
             var str = String.Concat(chars);

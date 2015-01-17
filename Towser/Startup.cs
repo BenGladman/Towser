@@ -15,7 +15,7 @@ namespace Towser
             app.MapSignalR();
 
             // persistent connection route
-            app.MapSignalR<TowserPersistentConnection>("/towser");
+            app.MapSignalR<Vanilla.VanillaConnection>("/vanilla");
         }
     }
 }

@@ -1,24 +1,25 @@
 ﻿using System.Collections.Immutable;
 using System.Threading.Tasks;
 
-namespace Towser
+namespace Towser.Aesop
 {
     /// <summary>
-    /// Decodes the bytes received from the server into ANSI fragments and sends to the terminal.
+    /// Decodes the bytes received from the server into <see cref="Fragment"/>s.
+    /// The fragements are serialised in Json and sent to the terminal.
     /// </summary>
-    public class AnsiDecoder : BaseDecoder
+    public class Decoder : BaseDecoder
     {
-        private readonly IAnsiTerminal _terminal;
+        private readonly ITerminal _terminal;
 
-        public AnsiDecoder(IAnsiTerminal terminal)
+        public Decoder(ITerminal terminal)
         {
             _terminal = terminal;
         }
 
         private EscapeState _escapeState = EscapeState.Normal;
 
-        private AnsiEscapeCode _escapeCode;
-        private ImmutableList<AnsiFragment> _fragments = ImmutableList<AnsiFragment>.Empty;
+        private EscapeCode _escapeCode;
+        private ImmutableList<Fragment> _fragments = ImmutableList<Fragment>.Empty;
 
         public override async Task AddByte(byte b)
         {
@@ -60,12 +61,12 @@ namespace Towser
                     if (ch >= ' ' && ch <= '/')
                     {
                         // escape sequence introducers
-                        _escapeCode = new AnsiEscapeCode(ch);
+                        _escapeCode = new EscapeCode(ch);
                         _escapeState = EscapeState.Esi;
                     }
                     else if (ch >= '@' && ch <= '_')
                     {
-                        _escapeCode = new AnsiEscapeCode(ch);
+                        _escapeCode = new EscapeCode(ch);
 
                         switch (ch)
                         {
@@ -182,14 +183,14 @@ namespace Towser
         private async Task ExecCommand()
         {
             await AddTextFragment();
-            _fragments = _fragments.AddRange(_escapeCode.AnsiFragments());
+            _fragments = _fragments.AddRange(_escapeCode.Fragments());
             _escapeState = EscapeState.Normal;
         }
 
         private async Task AddTextFragment()
         {
             var str = await GetDecodedString();
-            if (str.Length > 0) { _fragments = _fragments.Add(new AnsiFragment(str)); }
+            if (str.Length > 0) { _fragments = _fragments.Add(new Fragment(str)); }
         }
 
         public override async Task Flush()
