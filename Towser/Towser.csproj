@@ -111,19 +111,19 @@
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Aesop\EscapeCode.cs" />
-    <Compile Include="Aesop\Fragment.cs" />
-    <Compile Include="Telnet\ClientManager.cs" />
-    <Compile Include="Aesop\ITerminal.cs" />
-    <Compile Include="Telnet\StreamWriter.cs" />
-    <Compile Include="Vanilla\VanillaConnection.cs" />
+    <Compile Include="Server\Aesop\EscapeCode.cs" />
+    <Compile Include="Server\Aesop\Fragment.cs" />
+    <Compile Include="Server\Telnet\ClientManager.cs" />
+    <Compile Include="Server\Aesop\ITerminal.cs" />
+    <Compile Include="Server\Telnet\StreamWriter.cs" />
+    <Compile Include="Server\Vanilla\VanillaConnection.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Startup.cs" />
-    <Compile Include="Telnet\Client.cs" />
-    <Compile Include="Aesop\AesopHub.cs" />
-    <Compile Include="BaseDecoder.cs" />
-    <Compile Include="Aesop\Decoder.cs" />
-    <Compile Include="Vanilla\Decoder.cs" />
+    <Compile Include="Server\Startup.cs" />
+    <Compile Include="Server\Telnet\Client.cs" />
+    <Compile Include="Server\Aesop\AesopHub.cs" />
+    <Compile Include="Server\BaseDecoder.cs" />
+    <Compile Include="Server\Aesop\Decoder.cs" />
+    <Compile Include="Server\Vanilla\Decoder.cs" />
   </ItemGroup>
   <ItemGroup />
   <PropertyGroup>
