@@ -106,7 +106,10 @@
     <Content Include="Scripts\aesop.js" />
     <Content Include="Scripts\jquery.signalR-2.2.0.js" />
     <Content Include="Scripts\jquery.signalR-2.2.0.min.js" />
+    <Content Include="Scripts\keyboard.js" />
+    <Content Include="Scripts\term.js" />
     <Content Include="Scripts\vanilla.js" />
+    <Content Include="Scripts\perseus.js" />
     <Content Include="Scripts\VT100.js" />
     <Content Include="Web.config" />
   </ItemGroup>
@@ -116,14 +119,14 @@
     <Compile Include="Server\Telnet\ClientManager.cs" />
     <Compile Include="Server\Aesop\ITerminal.cs" />
     <Compile Include="Server\Telnet\StreamWriter.cs" />
-    <Compile Include="Server\Vanilla\VanillaConnection.cs" />
+    <Compile Include="Server\Perseus\PerseusConnection.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Server\Startup.cs" />
     <Compile Include="Server\Telnet\Client.cs" />
     <Compile Include="Server\Aesop\AesopHub.cs" />
     <Compile Include="Server\BaseDecoder.cs" />
     <Compile Include="Server\Aesop\Decoder.cs" />
-    <Compile Include="Server\Vanilla\Decoder.cs" />
+    <Compile Include="Server\Perseus\Decoder.cs" />
   </ItemGroup>
   <ItemGroup />
   <PropertyGroup>
