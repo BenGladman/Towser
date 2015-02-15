@@ -3,12 +3,12 @@ using System;
 using System.Threading.Tasks;
 using System.Web.Hosting;
 
-namespace Towser.Perseus
+namespace Towser.Bridg
 {
     /// <summary>
     /// Manages comms between Telnet Server and SignalR Persistent Connection clients with minimal processing.
     /// </summary>
-    public class PerseusConnection : PersistentConnection
+    public class BridgConnection : PersistentConnection
     {
         private static Telnet.ClientManager _tcm = new Telnet.ClientManager();
 

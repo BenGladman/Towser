@@ -15,7 +15,7 @@ namespace Towser
             app.MapSignalR();
 
             // persistent connection route
-            app.MapSignalR<Perseus.PerseusConnection>("/perseus");
+            app.MapSignalR<Bridg.BridgConnection>("/bridg");
         }
     }
 }

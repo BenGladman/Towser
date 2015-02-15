@@ -108,9 +108,7 @@
     <Content Include="Scripts\jquery.signalR-2.2.0.min.js" />
     <Content Include="Scripts\keyboard.js" />
     <Content Include="Scripts\term.js" />
-    <Content Include="Scripts\vanilla.js" />
-    <Content Include="Scripts\perseus.js" />
-    <Content Include="Scripts\VT100.js" />
+    <Content Include="Scripts\bridg.js" />
     <Content Include="Web.config">
       <SubType>Designer</SubType>
     </Content>
@@ -121,14 +119,14 @@
     <Content Include="App_Code\Telnet\ClientManager.cs" />
     <Content Include="App_Code\Adas\ITerminal.cs" />
     <Content Include="App_Code\Telnet\StreamWriter.cs" />
-    <Content Include="App_Code\Perseus\PerseusConnection.cs" />
+    <Content Include="App_Code\Bridg\BridgConnection.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Content Include="App_Code\Startup.cs" />
     <Content Include="App_Code\Telnet\Client.cs" />
     <Content Include="App_Code\Adas\AdasHub.cs" />
     <Content Include="App_Code\BaseDecoder.cs" />
     <Content Include="App_Code\Adas\Decoder.cs" />
-    <Content Include="App_Code\Perseus\Decoder.cs" />
+    <Content Include="App_Code\Bridg\Decoder.cs" />
   </ItemGroup>
   <ItemGroup />
   <PropertyGroup>

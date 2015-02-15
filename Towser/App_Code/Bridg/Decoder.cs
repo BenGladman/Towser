@@ -3,7 +3,7 @@ using System;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Towser.Perseus
+namespace Towser.Bridg
 {
     /// <summary>
     /// Decodes the bytes received from the server into strings and writes the strings to the terminal.
@@ -22,7 +22,7 @@ namespace Towser.Perseus
             var str = await GetDecodedString();
             if (str.Length > 0)
             {
-                var context = GlobalHost.ConnectionManager.GetConnectionContext<PerseusConnection>();
+                var context = GlobalHost.ConnectionManager.GetConnectionContext<BridgConnection>();
                 await context.Connection.Send(_connectionId, str);
             }
         }

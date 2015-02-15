@@ -14,4 +14,4 @@ Configure the telnet client by editing web.config:
 
 ### Terminal emulator ###
 
-The VT100 terminal emulation is by Frank Bi, and was taken from https://code.google.com/p/sshconsole/
+The terminal emulation is term.js by Christopher Jeffrey (MIT License) https://github.com/chjj/term.js
