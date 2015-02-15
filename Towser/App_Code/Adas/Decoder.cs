@@ -1,11 +1,11 @@
 ﻿using System.Collections.Immutable;
 using System.Threading.Tasks;
 
-namespace Towser.Aesop
+namespace Towser.Adas
 {
     /// <summary>
     /// Decodes the bytes received from the server into <see cref="Fragment"/>s.
-    /// The fragements are serialised in Json and sent to the terminal.
+    /// The fragements are serialised in JSON and sent to the terminal.
     /// </summary>
     public class Decoder : BaseDecoder
     {

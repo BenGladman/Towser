@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
 
-namespace Towser.Aesop
+namespace Towser.Adas
 {
     /// <summary>
     /// Represents a decoded ANSI escape code or plain text, which can be serialised to send to the terminal.

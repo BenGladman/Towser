@@ -1,6 +1,6 @@
 ﻿using System.Collections.Immutable;
 
-namespace Towser.Aesop
+namespace Towser.Adas
 {
     /// <summary>
     /// Represents an ANSI Escape Code.

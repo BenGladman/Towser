@@ -48,17 +48,17 @@
       <HintPath>..\packages\Microsoft.AspNet.SignalR.SystemWeb.2.2.0\lib\net45\Microsoft.AspNet.SignalR.SystemWeb.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="Microsoft.Owin, Version=2.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+    <Reference Include="Microsoft.Owin, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Microsoft.Owin.2.1.0\lib\net45\Microsoft.Owin.dll</HintPath>
+      <HintPath>..\packages\Microsoft.Owin.3.0.0\lib\net45\Microsoft.Owin.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Owin.Host.SystemWeb, Version=2.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+    <Reference Include="Microsoft.Owin.Host.SystemWeb, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Microsoft.Owin.Host.SystemWeb.2.1.0\lib\net45\Microsoft.Owin.Host.SystemWeb.dll</HintPath>
+      <HintPath>..\packages\Microsoft.Owin.Host.SystemWeb.3.0.0\lib\net45\Microsoft.Owin.Host.SystemWeb.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Owin.Security, Version=2.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+    <Reference Include="Microsoft.Owin.Security, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Microsoft.Owin.Security.2.1.0\lib\net45\Microsoft.Owin.Security.dll</HintPath>
+      <HintPath>..\packages\Microsoft.Owin.Security.3.0.0\lib\net45\Microsoft.Owin.Security.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -90,10 +90,10 @@
   <ItemGroup>
     <Content Include="index.html" />
     <Content Include="packages.config" />
-    <None Include="Scripts\jquery-2.1.1.intellisense.js" />
-    <Content Include="Scripts\jquery-2.1.1.js" />
-    <Content Include="Scripts\jquery-2.1.1.min.js" />
-    <Content Include="Scripts\jquery-2.1.1.min.map" />
+    <None Include="Scripts\jquery-2.1.3.intellisense.js" />
+    <Content Include="Scripts\jquery-2.1.3.js" />
+    <Content Include="Scripts\jquery-2.1.3.min.js" />
+    <Content Include="Scripts\jquery-2.1.3.min.map" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
@@ -103,7 +103,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Scripts\aesop.js" />
+    <Content Include="Scripts\adas.js" />
     <Content Include="Scripts\jquery.signalR-2.2.0.js" />
     <Content Include="Scripts\jquery.signalR-2.2.0.min.js" />
     <Content Include="Scripts\keyboard.js" />
@@ -111,22 +111,24 @@
     <Content Include="Scripts\vanilla.js" />
     <Content Include="Scripts\perseus.js" />
     <Content Include="Scripts\VT100.js" />
-    <Content Include="Web.config" />
+    <Content Include="Web.config">
+      <SubType>Designer</SubType>
+    </Content>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Server\Aesop\EscapeCode.cs" />
-    <Compile Include="Server\Aesop\Fragment.cs" />
-    <Compile Include="Server\Telnet\ClientManager.cs" />
-    <Compile Include="Server\Aesop\ITerminal.cs" />
-    <Compile Include="Server\Telnet\StreamWriter.cs" />
-    <Compile Include="Server\Perseus\PerseusConnection.cs" />
+    <Content Include="App_Code\Adas\EscapeCode.cs" />
+    <Content Include="App_Code\Adas\Fragment.cs" />
+    <Content Include="App_Code\Telnet\ClientManager.cs" />
+    <Content Include="App_Code\Adas\ITerminal.cs" />
+    <Content Include="App_Code\Telnet\StreamWriter.cs" />
+    <Content Include="App_Code\Perseus\PerseusConnection.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Server\Startup.cs" />
-    <Compile Include="Server\Telnet\Client.cs" />
-    <Compile Include="Server\Aesop\AesopHub.cs" />
-    <Compile Include="Server\BaseDecoder.cs" />
-    <Compile Include="Server\Aesop\Decoder.cs" />
-    <Compile Include="Server\Perseus\Decoder.cs" />
+    <Content Include="App_Code\Startup.cs" />
+    <Content Include="App_Code\Telnet\Client.cs" />
+    <Content Include="App_Code\Adas\AdasHub.cs" />
+    <Content Include="App_Code\BaseDecoder.cs" />
+    <Content Include="App_Code\Adas\Decoder.cs" />
+    <Content Include="App_Code\Perseus\Decoder.cs" />
   </ItemGroup>
   <ItemGroup />
   <PropertyGroup>

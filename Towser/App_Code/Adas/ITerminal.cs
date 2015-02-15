@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Towser.Aesop
+namespace Towser.Adas
 {
     /// <summary>
     /// A terminal that receives lists of <see cref="Fragment"/>s.

@@ -1,4 +1,4 @@
-﻿var aesopInit = function () {
+﻿var adasInit = function () {
 
     var vt100 = new VT100(132, 24, 'terminal');
 
@@ -156,7 +156,7 @@
         if (fragment.sgr) { setSgrs(fragment.sgr); }
     };
 
-    var hub = $.connection.aesopHub;
+    var hub = $.connection.adasHub;
 
     hub.client.write = function (data) {
         data.forEach(processFragment);

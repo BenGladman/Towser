@@ -2,12 +2,13 @@
 using Microsoft.AspNet.SignalR;
 using System.Threading.Tasks;
 
-namespace Towser.Aesop
+namespace Towser.Adas
 {
     /// <summary>
-    /// Manages comms between Telnet server and SignalR hub clients which understand <see cref="AesopFragment"/>s.
+    /// Manages comms between Telnet server and SignalR hub clients which understand <see cref="Fragment"/>s.
+    /// (Note - ADAS = Ansi Decoding At Server.)
     /// </summary>
-    public class AesopHub : Hub<ITerminal>
+    public class AdasHub : Hub<ITerminal>
     {
         private static Telnet.ClientManager _tcm = new Telnet.ClientManager();
 
