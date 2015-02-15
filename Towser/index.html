@@ -8,6 +8,7 @@
     <script src="Scripts/jquery.signalR-2.2.0.min.js"></script>
     <script src="Scripts/term.js"></script>
     <script src="Scripts/keyboard.js"></script>
+    <script src="Scripts/adac.js"></script>
     <script src="Scripts/adas.js"></script>
     <script src="Scripts/bridg.js"></script>
     <script src="signalr/hubs"></script>
@@ -16,8 +17,9 @@
 <body>
 
     <div id="buttons">
-        <button onclick="adasInit();">Init Adas (hub)</button>
-        <button onclick="bridgInit();">Init Bridg (Persistent Connection)</button>
+        <button onclick="adacInit();">ANSI decoding at client (hub)</button>
+        <button onclick="adasInit();">ANSI decoding at server (hub)</button>
+        <button onclick="bridgInit();">ANSI decoding at client (Persistent Connection)</button>
     </div>
 
     <pre id="terminal"></pre>

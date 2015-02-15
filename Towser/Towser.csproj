@@ -91,6 +91,7 @@
     <Content Include="index.html" />
     <Content Include="packages.config" />
     <None Include="Scripts\jquery-2.1.3.intellisense.js" />
+    <Content Include="Scripts\adac.js" />
     <Content Include="Scripts\jquery-2.1.3.js" />
     <Content Include="Scripts\jquery-2.1.3.min.js" />
     <Content Include="Scripts\jquery-2.1.3.min.map" />
@@ -120,6 +121,9 @@
     <Content Include="App_Code\Adas\ITerminal.cs" />
     <Content Include="App_Code\Telnet\StreamWriter.cs" />
     <Content Include="App_Code\Bridg\BridgConnection.cs" />
+    <Content Include="App_Code\Adac\AdacHub.cs" />
+    <Content Include="App_Code\Adac\ITerminal.cs" />
+    <Content Include="App_Code\Adac\Decoder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Content Include="App_Code\Startup.cs" />
     <Content Include="App_Code\Telnet\Client.cs" />

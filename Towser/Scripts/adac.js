@@ -1,4 +1,4 @@
-﻿var bridgInit = function () {
+﻿var adacInit = function () {
     var term = new Terminal({
         cols: 132,
         rows: 24,
@@ -15,21 +15,25 @@
 
     term.open(document.body);
 
-    var connection = $.connection('/bridg');
+    var hub = $.connection.adacHub;
 
-    // receive from signalR
-    connection.received(function (data) {
+    hub.client.write = function (data) {
         term.write(data);
-    });
+    }
 
-    connection.start().done(function () {
-        console.log('Now connected');
+    $.connection.hub.start()
+        .done(function () {
+            console.log('Now connected, connection ID=' + $.connection.hub.id);
 
-        // receive from terminal
-        term.on("data", function (data) {
-            connection.send(data);
+            // receive from terminal
+            term.on("data", function (data) {
+                hub.server.keyPress(data);
+            });
+        })
+
+        .fail(function () {
+            console.log('Could not Connect!');
         });
-    });
 
     window.document.getElementById("buttons").style.display = "none";
 }

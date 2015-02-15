@@ -77,5 +77,4 @@
         });
 
     window.document.getElementById("buttons").style.display = "none";
-    window.term = term;
 }
