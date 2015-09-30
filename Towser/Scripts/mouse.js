@@ -77,15 +77,15 @@
         // convert to cols/rows
         w = self.element.clientWidth;
         h = self.element.clientHeight;
-        x = Math.round((x / w) * self.cols);
-        y = Math.round((y / h) * self.rows);
+        x = Math.floor((x / w) * self.cols);
+        y = Math.floor((y / h) * self.rows);
 
         // be sure to avoid sending
         // bad positions to the program
         if (x < 0) x = 0;
-        if (x > self.cols) x = self.cols;
+        if (x >= self.cols) x = self.cols - 1;
         if (y < 0) y = 0;
-        if (y > self.rows) y = self.rows;
+        if (y >= self.rows) y = self.rows - 1;
 
         return {
             x: x,
