@@ -4,14 +4,13 @@
         rows: 24,
         useStyle: true,
         screenKeys: true,
-        cursorBlink: false
+        cursorBlink: false,
+        colors: Terminal.xtermColors
     });
 
-    //override term.js keyboard handling
-    var emitFunction = function (ch) { term.emit("data", ch); };
-    var onKeyHandler = keyboardInit(emitFunction);
-    term.keyDown = onKeyHandler;
-    term.keyPress = onKeyHandler;
+    //override term.js keyboard & mouse handling
+    keyboardInit(term);
+    mouseInit(term);
 
     term.open(document.body);
 

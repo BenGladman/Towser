@@ -1,34 +1,41 @@
-﻿var keyboardInit = function (emitFunction) {
+﻿var keyboardInit = function (term) {
+    var emitFunction = function (ch) { term.emit("data", ch); };
+
+    /**
+     * keymap object
+     * index: keyCode
+     * value: string _or_ tuple of [unmodifiedString, shiftString, ctrlString]
+     */
 
     var keymap = {
         // backspace
         8: '\b',
         // tab
-        9: '\t',
+        9: ['\t', '\x02\x0f'],
         // return
         13: '\r\n',
         // escape
         27: '\x1b',
         // page up
-        33: '\x1b[5~',
+        33: ['\x1b[5~', null, '\x02 '],
         // page down
-        34: '\x1b[6~',
+        34: ['\x1b[6~', '\x02v'],
         // end
-        35: '\x1b[4~',
+        35: ['\x1b[4~', '\x02u'],
         // home
         36: '\x1b[1~',
-        // down
-        39: '\x1b[C',
         // left
-        37: '\x1b[D',
+        37: ['\x1b[D', null, '\x02s'],
         // up
         38: '\x1b[A',
         // right
+        39: ['\x1b[C', null, '\x02t'],
+        // down
         40: '\x1b[B',
         // insert
-        45: '\x1b[2~',
+        45: ['\x1b[2~', null, '\x02.'],
         // delete
-        46: '\x1b[3~',
+        46: ['\x1b[3~', null, '\x02/'],
         // f1
         112: '\x1bOP',
         // f2
@@ -80,7 +87,19 @@
                 ch = String.fromCharCode(kc - 64);
 
             } else {
-                ch = keymap[kc];
+                var km = keymap[kc];
+                if (typeof km === "string") {
+                    ch = km;
+                } else if (km instanceof Array) {
+                    if (event.shiftKey) {
+                        ch = km[1];
+                    } else if (event.ctrlKey) {
+                        ch = km[2];
+                    } else {
+                        ch = km[0];
+                    }
+                }
+                
                 if (ch === undefined) { return true; }
             }
         }
@@ -91,5 +110,6 @@
         return false;
     };
 
-    return onKeyHandler;
+    term.keyDown = onKeyHandler;
+    term.keyPress = onKeyHandler;
 };
