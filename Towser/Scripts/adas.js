@@ -2,10 +2,10 @@
     var term = new Terminal({
         cols: 132,
         rows: 24,
-        useStyle: true,
         screenKeys: true,
         cursorBlink: false,
-        colors: Terminal.xtermColors
+        colors: Terminal.tangoColors,
+        parent: document.getElementById("terminal-container")
     });
 
     //override term.js keyboard & mouse handling
@@ -53,7 +53,7 @@
         term.refresh(term.refreshStart, term.refreshEnd);
     };
 
-    term.open(document.body);
+    term.open();
 
     var hub = $.connection.adasHub;
 

@@ -1,0 +1,16 @@
+﻿.terminal {
+  font-family: "DejaVu Sans Mono", "Liberation Mono", "Consolas", monospace;
+  font-size: 12px;
+  color: #f0f0f0;
+  background: #000000;
+}
+
+.terminal-cursor {
+  color: #000000;
+  background: #f0f0f0;
+}
+
+.terminal-container {
+    float: left;
+    border: 5px solid #000000;
+}
