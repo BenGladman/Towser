@@ -10,5 +10,20 @@ namespace Towser.Adac
     {
         Task Write(string data);
         Task Error(string s);
+
+        /// <summary>
+        /// Operating System Command
+        /// </summary>
+        Task Osc(string data);
+
+        /// <summary>
+        /// Privacy Message
+        /// </summary>
+        Task Pm(string data);
+
+        /// <summary>
+        /// Application Program Command
+        /// </summary>
+        Task Apc(string data);
     }
 }

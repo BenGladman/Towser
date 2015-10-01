@@ -55,7 +55,7 @@ namespace Towser
             }
         }
 
-        public virtual Task AddByte(byte b)
+        public virtual async Task AddByte(byte b)
         {
             if (b == 0x0e)
             {
@@ -77,7 +77,7 @@ namespace Towser
                 if (_bytelen >= _bufferSize) { AppendBytesToSb(); }
             }
 
-            return Task.FromResult(true);
+            await Task.FromResult(true);
         }
 
         public async Task<string> GetDecodedString()

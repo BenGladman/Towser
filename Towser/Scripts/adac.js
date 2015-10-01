@@ -20,6 +20,10 @@
         term.write(data);
     }
 
+    hub.client.osc = function (data) { console.info("OSC " + data); }
+    hub.client.pm = function (data) { console.info("PM " + data); }
+    hub.client.apc = function (data) { console.info("APC " + data); }
+
     $.connection.hub.start()
         .done(function () {
             console.log('Now connected, connection ID=' + $.connection.hub.id);
