@@ -12,6 +12,11 @@ namespace Towser.Adac
         Task Error(string s);
 
         /// <summary>
+        /// Device Control String
+        /// </summary>
+        Task Dcs(string data);
+
+        /// <summary>
         /// Operating System Command
         /// </summary>
         Task Osc(string data);
