@@ -21,6 +21,9 @@
             console.log('Could not Connect!');
         });
 
+    // receive from terminal
     term.ondata = function (data) { hub.server.keyPress(data); }
+
+    // reset terminal
     term.onreset = function () { $.connection.hub.stop(); }
 }
