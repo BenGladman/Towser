@@ -1,6 +1,6 @@
-﻿using System.Web.Hosting;
-using Microsoft.AspNet.SignalR;
+﻿using Microsoft.AspNet.SignalR;
 using System.Threading.Tasks;
+using System.Web.Hosting;
 
 namespace Towser.Hub
 {

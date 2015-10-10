@@ -1,6 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Linq;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,18 +9,21 @@ namespace Towser.Telnet
     {
         private readonly NetworkStream _stream;
         private readonly Encoding _encoding;
+        private readonly List<byte> _writeBuffer;
 
         public StreamWriter(NetworkStream stream, string encodingName)
         {
             _stream = stream;
             _encoding = Encoding.GetEncoding(encodingName);
+            _writeBuffer = new List<byte>();
         }
-
-        private ImmutableList<byte> _writeBuffer = ImmutableList.Create<byte>();
 
         public void AddByte(byte b)
         {
-            _writeBuffer = _writeBuffer.Add(b);
+            lock (_writeBuffer)
+            {
+                _writeBuffer.Add(b);
+            }
         }
 
         /// <summary>
@@ -53,17 +54,18 @@ namespace Towser.Telnet
 
         private byte[] GetBytesToFlush()
         {
-            var wb = _writeBuffer;
-            _writeBuffer = _writeBuffer.Clear();
+            byte[] r = null;
 
-            if (wb.Count == 0)
+            if (_writeBuffer.Count > 0)
             {
-                return null;
+                lock (_writeBuffer)
+                {
+                    r = _writeBuffer.ToArray();
+                    _writeBuffer.Clear();
+                }
             }
-            else
-            {
-                return wb.ToArray();
-            }
+
+            return r;
         }
 
         public void Flush()
