@@ -16,16 +16,11 @@
     $.connection.hub.start()
         .done(function () {
             console.log('Now connected, connection ID=' + $.connection.hub.id);
-
-            // receive from terminal
-            term.on("data", function (data) {
-                hub.server.keyPress(data);
-            });
         })
-
         .fail(function () {
             console.log('Could not Connect!');
         });
 
+    term.ondata = function (data) { hub.server.keyPress(data); }
     term.onreset = function () { $.connection.hub.stop(); }
 }

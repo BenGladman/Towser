@@ -8,14 +8,17 @@
         term.write(data);
     });
 
-    connection.start().done(function () {
-        console.log('Now connected');
-
-        // receive from terminal
-        term.on("data", function (data) {
-            connection.send(data);
+    connection.start()
+        .done(function () {
+            console.log('Now connected');
+        })
+        .fail(function () {
+            console.log('Could not Connect!');
         });
-    });
 
+    // receive from terminal
+    term.ondata = function (data) { connection.send(data); }
+
+    // reset terminal
     term.onreset = function () { connection.stop(); }
 }

@@ -19,6 +19,11 @@
         towserKeyboardInit(term);
         towserMouseInit(term);
 
+        // receive from terminal
+        term.on("data", function (data) {
+            if (term.ondata) { term.ondata(data); }
+        });
+
         term.open();
 
         Terminal.towserTerminal = term;
