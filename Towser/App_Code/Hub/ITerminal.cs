@@ -1,7 +1,6 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
-namespace Towser.Adac
+namespace Towser.Hub
 {
     /// <summary>
     /// A terminal that receives strings with embedded ANSI escape sequences.

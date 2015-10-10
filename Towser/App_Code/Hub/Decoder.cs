@@ -3,7 +3,7 @@ using System;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Towser.Adac
+namespace Towser.Hub
 {
     /// <summary>
     /// Decodes the bytes received from the server into strings and writes the strings to the terminal.

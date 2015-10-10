@@ -2,13 +2,12 @@
 using Microsoft.AspNet.SignalR;
 using System.Threading.Tasks;
 
-namespace Towser.Adas
+namespace Towser.Hub
 {
     /// <summary>
-    /// Manages comms between Telnet server and SignalR hub clients which understand <see cref="Fragment"/>s.
-    /// (Note - ADAS = Ansi Decoding At Server.)
+    /// Manages comms between Telnet server and SignalR hub clients.
     /// </summary>
-    public class AdasHub : Hub<ITerminal>
+    public class TowserHub : Hub<ITerminal>
     {
         private static Telnet.ClientManager _tcm = new Telnet.ClientManager();
 

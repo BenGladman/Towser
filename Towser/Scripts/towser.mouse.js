@@ -1,4 +1,4 @@
-﻿var mouseInit = function (self) {
+﻿var towserMouseInit = function (self) {
     var on = function (el, type, handler, capture) {
         el.addEventListener(type, handler, capture || false);
     }

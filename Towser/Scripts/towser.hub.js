@@ -1,20 +1,7 @@
-﻿var adacInit = function () {
-    var term = new Terminal({
-        cols: 132,
-        rows: 24,
-        screenKeys: true,
-        cursorBlink: false,
-        colors: Terminal.tangoColors,
-        parent: document.getElementById("terminal-container")
-    });
+﻿var towserHubInit = function () {
+    var term = towserTermInit();
 
-    //override term.js keyboard & mouse handling
-    keyboardInit(term);
-    mouseInit(term);
-
-    term.open();
-
-    var hub = $.connection.adacHub;
+    var hub = $.connection.towserHub;
 
     hub.client.write = function (data) {
         term.write(data);
@@ -40,5 +27,5 @@
             console.log('Could not Connect!');
         });
 
-    window.document.getElementById("buttons").style.display = "none";
+    term.onreset = function () { $.connection.hub.stop(); }
 }

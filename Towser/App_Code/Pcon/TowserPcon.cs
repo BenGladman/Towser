@@ -2,12 +2,12 @@
 using System.Threading.Tasks;
 using System.Web.Hosting;
   
-namespace Towser.Bridg
+namespace Towser.Pcon
 {
     /// <summary>
     /// Manages comms between Telnet Server and SignalR Persistent Connection clients with minimal processing.
     /// </summary>
-    public class BridgConnection : PersistentConnection
+    public class TowserPcon : PersistentConnection
     {
         private static Telnet.ClientManager _tcm = new Telnet.ClientManager();
 

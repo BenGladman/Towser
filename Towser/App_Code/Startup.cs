@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using Microsoft.Owin;
+﻿using Microsoft.Owin;
 using Owin;
 
 [assembly: OwinStartup(typeof(Towser.Startup))]
@@ -15,7 +13,7 @@ namespace Towser
             app.MapSignalR();
 
             // persistent connection route
-            app.MapSignalR<Bridg.BridgConnection>("/bridg");
+            app.MapSignalR<Towser.Pcon.TowserPcon>("/towserPcon");
         }
     }
 }

@@ -2,3 +2,4 @@ packages/
 Towser/bin/
 Towser/Web.config
 Towser/obj/
+.vs/

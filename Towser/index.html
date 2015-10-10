@@ -7,11 +7,11 @@
     <script src="Scripts/jquery-2.1.3.min.js"></script>
     <script src="Scripts/jquery.signalR-2.2.0.min.js"></script>
     <script src="Scripts/term.js"></script>
-    <script src="Scripts/keyboard.js"></script>
-    <script src="Scripts/mouse.js"></script>
-    <script src="Scripts/adac.js"></script>
-    <script src="Scripts/adas.js"></script>
-    <script src="Scripts/bridg.js"></script>
+    <script src="Scripts/towser.term.js"></script>
+    <script src="Scripts/towser.keyboard.js"></script>
+    <script src="Scripts/towser.mouse.js"></script>
+    <script src="Scripts/towser.hub.js"></script>
+    <script src="Scripts/towser.pcon.js"></script>
     <script src="signalr/hubs"></script>
     <link rel="stylesheet" type="text/css" href="towser.css">
 </head>
@@ -19,9 +19,8 @@
 <body>
 
     <div id="buttons">
-        <button onclick="adacInit();">ANSI decoding at client (hub)</button>
-        <button onclick="adasInit();">ANSI decoding at server (hub)</button>
-        <button onclick="bridgInit();">ANSI decoding at client (Persistent Connection)</button>
+        <button onclick="towserHubInit();">Hub</button>
+        <button onclick="towserPconInit();">Persistent Connection</button>
     </div>
 
     <div id="terminal-container" class="terminal-container"></div>

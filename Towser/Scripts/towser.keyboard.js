@@ -1,4 +1,4 @@
-﻿var keyboardInit = function (term) {
+﻿var towserKeyboardInit = function (term) {
     var emitFunction = function (ch) { term.emit("data", ch); };
 
     /**
