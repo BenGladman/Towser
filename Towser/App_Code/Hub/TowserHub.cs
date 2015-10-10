@@ -16,7 +16,7 @@ namespace Towser.Hub
             var connectionId = Context.ConnectionId;
             var decoder = new Decoder(Clients.Caller);
             await _tcm.Init(connectionId, decoder);
-            HostingEnvironment.QueueBackgroundWorkItem((ct) => _tcm.ReadLoop(connectionId, decoder));
+            HostingEnvironment.QueueBackgroundWorkItem((ct) => _tcm.ReadLoop(connectionId, decoder, ct));
         }
 
         public override Task OnDisconnected(bool stopCalled)

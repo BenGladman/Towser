@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Configuration;
 
@@ -69,7 +70,7 @@ namespace Towser.Telnet
         /// <summary>
         /// Wait for data from the telnet server and send it to the emulation.
         /// </summary>
-        public async Task ReadLoop(string connectionId, BaseDecoder decoder)
+        public async Task ReadLoop(string connectionId, BaseDecoder decoder, CancellationToken ct)
         {
             var client = Get(connectionId);
             if (client == null) { return; }
@@ -105,9 +106,9 @@ namespace Towser.Telnet
 
             const int bufferSize = 4096;
 
-            while (client.IsConnected)
+            while (client.IsConnected && !ct.IsCancellationRequested)
             {
-                var inBytes = await client.ReadAsync(bufferSize);
+                var inBytes = await client.ReadAsync(bufferSize, ct);
 
                 foreach (var b in inBytes)
                 {

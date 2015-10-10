@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Sockets;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Towser.Telnet
@@ -60,7 +61,7 @@ namespace Towser.Telnet
         /// Read up to bufferSize bytes from server.
         /// </summary>
         /// <returns></returns>
-        public async Task<IEnumerable<byte>> ReadAsync(int bufferSize)
+        public async Task<IEnumerable<byte>> ReadAsync(int bufferSize, CancellationToken ct)
         {
             if (!IsConnected) { return Enumerable.Empty<byte>(); }
 
@@ -69,11 +70,16 @@ namespace Towser.Telnet
             var count = 0;
             try
             {
-                count = await _stream.ReadAsync(buffer, 0, bufferSize);
+                count = await _stream.ReadAsync(buffer, 0, bufferSize, ct);
             }
             catch (IOException e)
             {
                 Debug.WriteLine("Stream read failed {0}", e);
+                return Enumerable.Empty<byte>();
+            }
+            catch (OperationCanceledException e)
+            {
+                Debug.WriteLine("Operation cancelled {0}",e);
                 return Enumerable.Empty<byte>();
             }
 

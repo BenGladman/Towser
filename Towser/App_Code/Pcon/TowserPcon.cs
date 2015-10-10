@@ -15,7 +15,7 @@ namespace Towser.Pcon
         {
             var decoder = new Decoder(connectionId);
             await _tcm.Init(connectionId, decoder);
-            HostingEnvironment.QueueBackgroundWorkItem((ct) => _tcm.ReadLoop(connectionId, decoder));
+            HostingEnvironment.QueueBackgroundWorkItem((ct) => _tcm.ReadLoop(connectionId, decoder, ct));
         }
 
         protected override async Task OnReceived(IRequest request, string connectionId, string data)
