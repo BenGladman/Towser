@@ -1,8 +1,7 @@
 ﻿using Microsoft.AspNet.SignalR;
-using System;
 using System.Threading.Tasks;
 using System.Web.Hosting;
-
+  
 namespace Towser.Bridg
 {
     /// <summary>
@@ -20,7 +19,7 @@ namespace Towser.Bridg
         }
 
         protected override async Task OnReceived(IRequest request, string connectionId, string data)
-        {
+        {            
             await _tcm.Write(connectionId, data);
         }
 

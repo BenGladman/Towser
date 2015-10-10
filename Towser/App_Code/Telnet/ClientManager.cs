@@ -22,7 +22,7 @@ namespace Towser.Telnet
             var client = Get(connectionId);
             if (client != null)
             {
-                client.Disconnect();
+                client.Dispose();
                 _clients.Remove(connectionId);
             }
             return;

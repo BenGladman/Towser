@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Towser.Telnet
 {
-    class Client
+    class Client : IDisposable
     {
         enum Verbs : byte
         {
@@ -50,13 +50,10 @@ namespace Towser.Telnet
             StreamWriter = new StreamWriter(_stream, encodingName);
         }
 
-        public void Disconnect()
+        public void Dispose()
         {
-            if (IsConnected)
-            {
-                _stream.Close();
-                _tcpclient.Close();
-            }
+            if (_stream != null) { _stream.Dispose(); }
+            if (_tcpclient != null) { _tcpclient.Close(); }
         }
 
         /// <summary>
