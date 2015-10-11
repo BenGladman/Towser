@@ -8,6 +8,7 @@
     }
 
     hub.client.error = function (data) { console.error(data); }
+    hub.client.stop = function () { console.info("Stopped"); }
     hub.client.dcs = function (data) { console.error("DCS " + data); }
     hub.client.osc = function (data) { console.info("OSC " + data); }
     hub.client.pm = function (data) { console.info("PM " + data); }

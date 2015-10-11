@@ -9,6 +9,7 @@ namespace Towser.Hub
     {
         Task Write(string data);
         Task Error(string s);
+        Task Stop();
 
         /// <summary>
         /// Device Control String
