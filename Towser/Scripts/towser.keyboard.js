@@ -1,6 +1,4 @@
 ﻿var towserKeyboardInit = function (term) {
-    var emitFunction = function (ch) { term.emit("data", ch); };
-
     /**
      * keymap object
      * index: keyCode
@@ -44,8 +42,8 @@
         114: '\x1bOR',
         // f4
         115: '\x1bOS',
-        // f5 (send f14 sequence)
-        116: '\x1b[26~',
+        // f5
+        116: '\x1b[15~',
         // f6
         117: '\x1b[17~',
         // f7
@@ -71,7 +69,6 @@
         if (event.type === "keypress") {
             // printable characters
             var charcode = event.charCode;
-            console.info("keypress " + charcode);
 
             if (charcode < 32) { return true; }
             if (charcode === 127) { return true; }
@@ -80,7 +77,6 @@
 
         } else if (event.type === "keydown") {
             var kc = event.keyCode;
-            console.info("keydown " + kc);
 
             if (kc >= 65 && kc <= 90 && event.ctrlKey && !event.shiftKey) {
                 // ctrl-key input
@@ -104,7 +100,7 @@
             }
         }
 
-        if (ch) { emitFunction(ch); }
+        if (ch && term.oninput) { term.oninput(ch); }
 
         event.preventDefault();
         return false;

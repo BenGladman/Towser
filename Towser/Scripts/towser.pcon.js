@@ -10,15 +10,15 @@
 
     connection.start()
         .done(function () {
-            console.log('Now connected');
+            console.log('Now connected, connection id=' + connection.id);
         })
         .fail(function () {
-            console.log('Could not Connect!');
+            console.log('Could not connect!');
         });
 
     // receive from terminal
-    term.ondata = function (data) { connection.send(data); }
+    term.oninput = function (data) { connection.send(data); }
 
-    // reset terminal
-    term.onreset = function () { connection.stop(); }
+    // stop terminal
+    term.onstop = function () { connection.stop(); }
 }

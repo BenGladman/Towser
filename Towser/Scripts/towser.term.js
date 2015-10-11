@@ -2,8 +2,9 @@
     var term = Terminal.towserTerminal;
 
     if (term) {
-        if (term.onreset) { term.onreset(); }
-        term.onreset = null;
+        if (term.onstop) { term.onstop(); }
+        term.onstop = null;
+        term.oninput = null;
 
     } else {
         term = new Terminal({
@@ -18,11 +19,6 @@
         //override term.js keyboard & mouse handling
         towserKeyboardInit(term);
         towserMouseInit(term);
-
-        // receive from terminal
-        term.on("data", function (data) {
-            if (term.ondata) { term.ondata(data); }
-        });
 
         term.open();
 

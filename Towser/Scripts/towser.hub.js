@@ -15,15 +15,15 @@
 
     $.connection.hub.start()
         .done(function () {
-            console.log('Now connected, connection ID=' + $.connection.hub.id);
+            console.log('Now connected, connection id=' + $.connection.hub.id);
         })
         .fail(function () {
-            console.log('Could not Connect!');
+            console.log('Could not connect!');
         });
 
     // receive from terminal
-    term.ondata = function (data) { hub.server.keyPress(data); }
+    term.oninput = function (data) { hub.server.keyPress(data); }
 
-    // reset terminal
-    term.onreset = function () { $.connection.hub.stop(); }
+    // stop terminal
+    term.onstop = function () { $.connection.hub.stop(); }
 }

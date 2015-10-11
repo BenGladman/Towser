@@ -31,7 +31,7 @@
     // send SBClient mouse event:
     var sendEvent = function (button, pos) {
         var data = "\x1b[M" + button + ";" + pos.x + ";" + pos.y + "\r";
-        self.send(data);
+        if (term.oninput) { term.oninput(data); }
     }
 
     var getButton = function (ev) {
