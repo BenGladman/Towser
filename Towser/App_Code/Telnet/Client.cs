@@ -24,6 +24,7 @@ namespace Towser.Telnet
 
         enum Options : byte
         {
+            NoOption = 0,
             Echo = 1,
             SuppressGoAhead = 3,
             Status = 5,
@@ -101,7 +102,9 @@ namespace Towser.Telnet
         /// <returns></returns>
         private IEnumerable<byte> ParseTelnet(byte[] buffer, int count)
         {
-            bool subnegotiation = false;
+            var subnegotiation = false;
+            var suboption = Options.NoOption;
+
             var ix = 0;
 
             Func<byte> getNextByte = delegate()
@@ -117,22 +120,32 @@ namespace Towser.Telnet
 
                 if (input == (byte)Verbs.IAC)
                 {
-                    var inputverb = getNextByte();
+                    var inputverb = (Verbs)getNextByte();
 
-                    switch ((Verbs)inputverb)
+                    switch (inputverb)
                     {
                         case Verbs.IAC:
                             //literal IAC = 255 escaped, so append char 255 to output
-                            yield return inputverb;
+                            yield return (byte)Verbs.IAC;
                             break;
 
                         case Verbs.SB:
                             subnegotiation = true;
-                            var suboption = getNextByte();
-                            Debug.WriteLine("Negotiate sub request {0} {1}", ((Verbs)inputverb).ToString(), ((Options)suboption).ToString());
+                            suboption = (Options)getNextByte();
+                            Debug.WriteLine("Negotiate sub request {0} {1}", inputverb.ToString(), suboption.ToString());
                             break;
 
                         case Verbs.SE:
+                            switch (suboption)
+                            {
+                                case Options.TerminalType:
+                                    SendTermtype();
+                                    break;
+                                default:
+                                    Debug.WriteLine("Negotiate sub {0} ignored", suboption.ToString());
+                                    break;
+                            }
+                            suboption = Options.NoOption;
                             subnegotiation = false;
                             break;
 
@@ -140,43 +153,38 @@ namespace Towser.Telnet
                         case Verbs.DONT:
                         case Verbs.WILL:
                         case Verbs.WONT:
-                            var inputoption = getNextByte();
+                            var inputoption = (Options)getNextByte();
 
-                            Debug.WriteLine("Negotiate request {0} {1}", ((Verbs)inputverb).ToString(), ((Options)inputoption).ToString());
+                            Debug.WriteLine("Negotiate request {0} {1}", inputverb.ToString(), inputoption.ToString());
 
-                            byte responseverb;
+                            Verbs responseverb;
 
-                            var doOrDont = (inputverb == (byte)Verbs.DO || inputverb == (byte)Verbs.DONT);
-                            switch ((Options)inputoption)
+                            var doOrDont = (inputverb == Verbs.DO || inputverb == Verbs.DONT);
+                            switch (inputoption)
                             {
                                 case Options.Echo:
-                                    responseverb = (doOrDont ? (byte)Verbs.WONT : (byte)Verbs.DO);
+                                    responseverb = (doOrDont ? Verbs.WONT : Verbs.DO);
                                     break;
                                 case Options.SuppressGoAhead:
-                                    responseverb = (doOrDont ? (byte)Verbs.WILL : (byte)Verbs.DO);
+                                    responseverb = (doOrDont ? Verbs.WILL : Verbs.DO);
                                     break;
                                 case Options.TerminalType:
-                                    responseverb = (doOrDont ? (byte)Verbs.WILL : (byte)Verbs.DONT);
+                                    responseverb = (doOrDont ? Verbs.WILL : Verbs.DONT);
                                     break;
                                 default:
-                                    responseverb = (doOrDont ? (byte)Verbs.WONT : (byte)Verbs.DONT);
+                                    responseverb = (doOrDont ? Verbs.WONT : Verbs.DONT);
                                     break;
                             }
 
-                            Debug.WriteLine("Negotiate response {0} {1}", ((Verbs)responseverb).ToString(), ((Options)inputoption).ToString());
+                            Debug.WriteLine("Negotiate response {0} {1}", responseverb.ToString(), inputoption.ToString());
                             StreamWriter.AddByte((byte)Verbs.IAC);
-                            StreamWriter.AddByte(responseverb);
+                            StreamWriter.AddByte((byte)responseverb);
                             StreamWriter.AddByte((byte)inputoption);
-
-                            if (inputoption == (byte)Options.TerminalType && responseverb == (byte)Verbs.WILL)
-                            {
-                                SendTermtype();
-                            }
 
                             break;
 
                         default:
-                            Debug.WriteLine("Negotiate ignore {0}", ((Verbs)inputverb).ToString(), null);
+                            Debug.WriteLine("Negotiate ignore {0}", inputverb.ToString(), null);
                             break;
                     }
                     StreamWriter.Flush();
@@ -184,7 +192,7 @@ namespace Towser.Telnet
                 else if (subnegotiation)
                 {
                     // ignore content of subnegotiation
-                    Debug.WriteLine("Negotiate sub ignore {0}", input);
+                    Debug.WriteLine("Negotiate sub {0}", input);
                 }
                 else
                 {
