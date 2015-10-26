@@ -16,6 +16,7 @@
 
     $.connection.hub.start()
         .done(function () {
+            hub.server.init();
             console.log('Now connected, connection id=' + $.connection.hub.id);
         })
         .fail(function () {

@@ -11,11 +11,22 @@ namespace Towser.Hub
     {
         private static Telnet.ClientManager _tcm = new Telnet.ClientManager();
 
-        public override async Task OnConnected()
+        /// <summary>
+        /// Connect using default termtype.
+        /// </summary>
+        public async Task Init()
+        {
+            await Init(null);
+        }
+
+        /// <summary>
+        /// Connect using specified termtype.
+        /// </summary>
+        public async Task Init(string termtype)
         {
             var connectionId = Context.ConnectionId;
             var decoder = new Decoder(Clients.Caller);
-            await _tcm.Init(connectionId, decoder);
+            await _tcm.Init(connectionId, decoder, termtype);
             HostingEnvironment.QueueBackgroundWorkItem(async (ct) =>
             {
                 await _tcm.ReadLoop(connectionId, decoder, ct);
@@ -29,6 +40,9 @@ namespace Towser.Hub
             return base.OnDisconnected(stopCalled);
         }
 
+        /// <summary>
+        /// Send data from terminal to server.
+        /// </summary>
         public async Task KeyPress(string data)
         {
             await _tcm.Write(Context.ConnectionId, data);

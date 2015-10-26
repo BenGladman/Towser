@@ -54,11 +54,11 @@ namespace Towser.Telnet
         /// <summary>
         /// Initialise a new telnet connection based on the web config.
         /// </summary>
-        public async Task Init(string connectionId, BaseDecoder decoder)
+        public async Task Init(string connectionId, BaseDecoder decoder, string termtype = null)
         {
             var server = WebConfigurationManager.AppSettings["server"];
             var port = Int32.Parse(WebConfigurationManager.AppSettings["port"]);
-            var termtype = WebConfigurationManager.AppSettings["termtype"];
+            termtype = termtype ?? WebConfigurationManager.AppSettings["termtype"];
             var encodingName = WebConfigurationManager.AppSettings["encoding"];
             var altEncodingName = WebConfigurationManager.AppSettings["altencoding"];
 
